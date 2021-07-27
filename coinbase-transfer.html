@@ -1,0 +1,85 @@
+<html>
+  <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
+  <script>
+    function getParameterByName(name, url = window.location.href) {
+      name = name.replace(/[\[\]]/g, '\\$&');
+      var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+          results = regex.exec(url);
+      if (!results) return null;
+      if (!results[2]) return '';
+      return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    }
+    
+    function getTimestamp() {
+      return new Promise(resolve => {
+        $.ajax({
+          type: 'GET',
+          url: 'https://api.pro.coinbase.com/time',
+          success: (data) => {
+            resolve(data?.epoch);
+          },
+          error: (error) => {
+            resolve(null);
+          }
+        });
+      });
+    }
+    
+    var required = getParameterByName('required');
+    
+    if(required) {
+      // Sigs and everything else is available, do work      
+      required = JSON.parse(required);
+      
+      var paymentMethods = required.signatures?.find(item => item.name == 'paymentMethods');
+      
+      if(paymentMethods) {
+        var paymentId = await new Promise(resolve => {
+          $.ajax({
+            type: 'GET',
+            url: 'https://api.pro.coinbase.com/payment-methods',
+            headers: {
+              'CB-ACCESS-KEY': required.key,              
+              'CB-ACCESS-TIMESTAMP': required.timestamp,
+              'CB-ACCESS-PASSPHRASE': required.passphrase,
+              'CB-ACCESS-SIGN': paymentMethods.signature,
+            },
+            success: (data) => {
+              resolve(data.find(item => item.name.includes('Evansville'))?.id);
+            },
+            error: (error) => {
+              resolve(null);
+            }
+          });
+        });
+        
+        if(paymentId) {
+          var paymentMethod = required.signatures?.find(item => item.name == 'paymentMethod');
+        }
+      }
+    } else {
+      // No params, return the list of things needed.
+      // Single timestamp to be consistent
+      var timestamp = await getTimestamp();
+      
+      // Fill in the required elements
+      required = {
+        signatures: [
+          {
+            name: 'paymentMethods', 
+            uri: 'GET/payment-methods/'
+          },
+          {
+            name: 'paymentMethod', 
+            uri: 'POST/deposits/payment-method/'
+          }
+        ],
+        timestamp: timestamp
+      };
+      
+      document.write(JSON.stringify(required));
+    }
+    
+    
+  </script>
+</html>
