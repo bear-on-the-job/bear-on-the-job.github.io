@@ -2,7 +2,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/hmac-sha256.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/enc-base64.min.js"></script>
-
 <script>
   function getParameterByName(name, url = window.location.href) {
     name = name.replace(/[\[\]]/g, '\\$&');
@@ -13,15 +12,15 @@
     return decodeURIComponent(results[2].replace(/\+/g, ' '));
   }
   
-  //var secret = Buffer.from(getParameterByName('secret'), 'base64');
-  //var hash = CryptoJS.HmacSHA256(getParameterByName('message'), getParameterByName('secret'));
-  var message = '12345GET/accounts/'
-  var secret = 'H7LJ/4FO7EIkqhYNV+FL1xLzLME/1WbEvxwAbUjavSeKEaIftimNacO6TMU8lEH4GmB5BOGI+Y9yO/DZM4xnlA==';  
+  var message = getParameterByName('message');
+  var secret = getParameterByName('secret');
   var secretDecoded = CryptoJS.enc.Base64.parse(secret);
   
   var hash = CryptoJS.HmacSHA256(message, secretDecoded);
   var hashInBase64 = CryptoJS.enc.Base64.stringify(hash);
-  document.write(hashInBase64);
+  var response = {
+    signature: hashInBase64
+  };
+  document.write(JSON.stringify(response));
 </script>
-
 </html>
