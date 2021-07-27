@@ -1,0 +1,14 @@
+<html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/hmac-sha256.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/enc-base64.min.js"></script>
+<script>
+  var secretDecoded = CryptoJS.enc.Base64.parse(secret);  
+  var hash = CryptoJS.HmacSHA256(message, secretDecoded);
+  var hashInBase64 = CryptoJS.enc.Base64.stringify(hash);
+  var response = {
+    signature: hashInBase64
+  };
+  document.write(JSON.stringify(response));
+</script>
+</html>
