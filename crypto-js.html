@@ -14,7 +14,8 @@
   }
   
   //var secret = Buffer.from(getParameterByName('secret'), 'base64');
-  var hash = CryptoJS.HmacSHA256(getParameterByName('message'), getParameterByName('secret'));
+  //var hash = CryptoJS.HmacSHA256(getParameterByName('message'), getParameterByName('secret'));
+  var hash = CryptoJS.HmacSHA256('12345GET/accounts/', 'H7LJ/4FO7EIkqhYNV+FL1xLzLME/1WbEvxwAbUjavSeKEaIftimNacO6TMU8lEH4GmB5BOGI+Y9yO/DZM4xnlA==');
   var hashInBase64 = CryptoJS.enc.Base64.stringify(hash);
   document.write(hashInBase64);
 </script>
