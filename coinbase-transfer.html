@@ -37,22 +37,25 @@
             required.timestamp && 
             required.passphrase ) {
         
-          var paymentMethods = required.signatures?.find(item => item.name == 'paymentMethods');
+          var paymentMethods = required.signatures?.find(item => item.uri == '/payment-methods/');
 
           if(paymentMethods) {
             $.ajax({
-              type: 'GET',
-              url: 'https://api.pro.coinbase.com/payment-methods',
+              type: paymentMethods.method,
+              url: 'https://api.pro.coinbase.com' + paymentMethods.uri,
               headers: {
                 'CB-ACCESS-KEY': required.key,              
                 'CB-ACCESS-TIMESTAMP': required.timestamp,
                 'CB-ACCESS-PASSPHRASE': required.passphrase,
                 'CB-ACCESS-SIGN': paymentMethods.signature,
               },
+              data: paymentMethods.body,
               success: (data) => {
                 var paymentId = data.find(item => item.name.includes('Evansville'))?.id;
                 if(paymentId) {
-                  var paymentMethod = required.signatures?.find(item => item.name == 'paymentMethod');
+                  var paymentMethod = required.signatures?.find(item => item.uri == '/deposits/payment-method/');
+                  
+                  document.write(paymentId);
                 }
               },
               error: (error) => {
@@ -75,12 +78,20 @@
           timestamp: timestamp,
           signatures: [
             {
-              name: 'paymentMethods', 
-              uri: 'GET/payment-methods/'
+              uri: '/payment-methods/',
+              method: 'GET',
+              body: null,
+              signature: null
             },
             {
-              name: 'paymentMethod', 
-              uri: 'POST/deposits/payment-method/'
+              uri: '/deposits/payment-method/',
+              method: 'POST',
+              body: {
+                  "amount": null, //10.00,
+                  "currency": null, //"USD",
+                  "payment_method_id": null, //"bc677162-d934-5f1a-968c-a496b1c1270b"
+              },
+              signature: null
             }
           ]
         }));
