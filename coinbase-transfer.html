@@ -21,6 +21,7 @@
     $.ajax({
       type: 'GET',
       url: 'https://api.pro.coinbase.com/payment-methods/',
+      contentType: 'application/json',
       dataType: 'json',
       headers: {
         'Access-Control-Allow-Origin': '*',
@@ -35,6 +36,7 @@
           $.ajax({
             type: 'POST',
             url: 'https://api.pro.coinbase.com/deposits/payment-method/',
+            contentType: 'application/json',
             dataType: 'json',
             headers: {
               'Access-Control-Allow-Origin': '*',
