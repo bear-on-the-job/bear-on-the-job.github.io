@@ -22,6 +22,7 @@
       type: 'GET',
       url: 'https://api.pro.coinbase.com/payment-methods/',
       headers: {
+        'Access-Control-Allow-Headers': 'Access-Control-Allow-Headers, CB-ACCESS-KEY, CB-ACCESS-TIMESTAMP, CB-ACCESS-PASSPHRASE, CB-ACCESS-SIGN',
         'CB-ACCESS-KEY': coinbase.key,              
         'CB-ACCESS-TIMESTAMP': coinbase.timestamp,
         'CB-ACCESS-PASSPHRASE': coinbase.passphrase,
