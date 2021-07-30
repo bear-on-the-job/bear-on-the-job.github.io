@@ -1,102 +1,63 @@
 <html>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/hmac-sha256.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/enc-base64.min.js"></script>
   <script>
-    function getParameterByName(name, url = window.location.href) {
-      name = name.replace(/[\[\]]/g, '\\$&');
-      var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-          results = regex.exec(url);
-      if (!results) return null;
-      if (!results[2]) return '';
-      return decodeURIComponent(results[2].replace(/\+/g, ' '));
-    }
+    var coinbase = {
+      key: `${key}`,
+      secret: `${secret}`,
+      passphrase: `${passphrase}`,
+      timestamp: (Date.now() / 1000)
+    };
     
-    function getTimestamp() {
-      return new Promise(resolve => {
-        $.ajax({
-          type: 'GET',
-          url: 'https://api.pro.coinbase.com/time',
-          success: (data) => {
-            resolve(data?.epoch);
-          },
-          error: (error) => {
-            resolve(null);
-          }
-        });
-      });
+    function sign(secret, method, uri, body) {
+      var message = coinbase.timestamp + method + uri + (body ?? '');
+      var secretDecoded = CryptoJS.enc.Base64.parse(coinbase.secret);
+      var hash = CryptoJS.HmacSHA256(message, secretDecoded);
+      return CryptoJS.enc.Base64.stringify(hash);
     }
-    
-    // Main code
-    {
-      var required = getParameterByName('required');
 
-      if(required) {
-        // Sigs and everything else is available, do work      
-        required = JSON.parse(required);
-
-        if( required.key &&
-            required.timestamp && 
-            required.passphrase ) {
-        
-          var paymentMethods = required.signatures?.find(item => item.uri == '/payment-methods/');
-
-          if(paymentMethods) {
-            $.ajax({
-              type: paymentMethods.method,
-              url: 'https://api.pro.coinbase.com' + paymentMethods.uri,
-              headers: {
-                'CB-ACCESS-KEY': required.key,              
-                'CB-ACCESS-TIMESTAMP': required.timestamp,
-                'CB-ACCESS-PASSPHRASE': required.passphrase,
-                'CB-ACCESS-SIGN': paymentMethods.signature,
-              },
-              data: paymentMethods.body,
-              success: (data) => {
-                var paymentId = data.find(item => item.name.includes('Evansville'))?.id;
-                if(paymentId) {
-                  var paymentMethod = required.signatures?.find(item => item.uri == '/deposits/payment-method/');
-                  
-                  document.write(paymentId);
-                }
-              },
-              error: (error) => {
-                resolve(null);
-              }
-            });
-          }
-        } else {
-          document.write(JSON.stringify({
-            error: 'Not enough required fields provided.'
-          }));
-        }
-      } else {
-        // No params, return the list of things needed.
-        // Single timestamp to be consistent
-        var timestamp = Date.now() / 1000; //await getTimestamp();
-
-        // State the required elements to the client
-        document.write(JSON.stringify({
-          timestamp: timestamp,
-          signatures: [
-            {
-              uri: '/payment-methods/',
-              method: 'GET',
-              body: null,
-              signature: null
+    $.ajax({
+      type: 'GET',
+      url: 'https://api.pro.coinbase.com/payment-methods/',
+      headers: {
+        'CB-ACCESS-KEY': coinbase.key,              
+        'CB-ACCESS-TIMESTAMP': coinbase.timestamp,
+        'CB-ACCESS-PASSPHRASE': coinbase.passphrase,
+        'CB-ACCESS-SIGN': sign(coinbase.secret, 'GET', '/payment-methods/'),
+      },
+      success: (data) => {
+        var paymentId = data.find(item => item.name.includes('Evansville'))?.id;
+        if(paymentId) {
+          $.ajax({
+            type: 'POST',
+            url: 'https://api.pro.coinbase.com/deposits/payment-method/',
+            headers: {
+              'CB-ACCESS-KEY': coinbase.key,              
+              'CB-ACCESS-TIMESTAMP': coinbase.timestamp,
+              'CB-ACCESS-PASSPHRASE': coinbase.passphrase,
+              'CB-ACCESS-SIGN': sign(coinbase.secret, 'POST', '/deposits/payment-method/'),
             },
-            {
-              uri: '/deposits/payment-method/',
-              method: 'POST',
-              body: {
-                  "amount": null, //10.00,
-                  "currency": null, //"USD",
-                  "payment_method_id": null, //"bc677162-d934-5f1a-968c-a496b1c1270b"
-              },
-              signature: null
+            data: {
+              "amount": 0, //10.00,
+              "currency": "USD",
+              "payment_method_id": paymentId
+            },
+            success: (data) => {
+              document.write(data);
+              console.log(data);
+            },
+            error: (error) => {
+              console.log(error);
             }
-          ]
-        }));
+          });
+        }
+      },
+      error: (error) => {
+        console.log(error);
       }
-    }
+    });
     
   </script>
 </html>
