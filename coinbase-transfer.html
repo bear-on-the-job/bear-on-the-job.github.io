@@ -21,8 +21,9 @@
     $.ajax({
       type: 'GET',
       url: 'https://api.pro.coinbase.com/payment-methods/',
+      crossDomain: true,
+      dataType: 'jsonp',
       headers: {
-        'Access-Control-Allow-Headers': 'Access-Control-Allow-Headers, CB-ACCESS-KEY, CB-ACCESS-TIMESTAMP, CB-ACCESS-PASSPHRASE, CB-ACCESS-SIGN',
         'CB-ACCESS-KEY': coinbase.key,              
         'CB-ACCESS-TIMESTAMP': coinbase.timestamp,
         'CB-ACCESS-PASSPHRASE': coinbase.passphrase,
@@ -34,6 +35,8 @@
           $.ajax({
             type: 'POST',
             url: 'https://api.pro.coinbase.com/deposits/payment-method/',
+            crossDomain: true,
+            dataType: 'jsonp',
             headers: {
               'CB-ACCESS-KEY': coinbase.key,              
               'CB-ACCESS-TIMESTAMP': coinbase.timestamp,
