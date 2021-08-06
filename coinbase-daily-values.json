@@ -1,6 +1,7 @@
 {
+  "deposit-source": "Evansville",
   "deposit-usd": 20.00,
-  "ratios": [
+  "buy-ratios": [
     {
       "product-id": "BTC-USD",
       "ratio": 0.33
