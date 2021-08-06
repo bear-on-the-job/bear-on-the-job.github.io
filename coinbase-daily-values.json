@@ -1,25 +1,25 @@
 {
   "deposit-usd": 20.00,
-  'ratios': [
+  "ratios": [
     {
-      'product-id': 'BTC-USD',
-      'ratio': 0.33
+      "product-id': "BTC-USD',
+      "ratio': 0.33
     },
     {
-      'product-id': 'ETH-USD',
-      'ratio': 0.33
+      "product-id': "ETH-USD',
+      "ratio': 0.33
     },
     {
-      'product-id': 'DOT-USD',
-      'ratio': 0.11
+      "product-id': "DOT-USD',
+      "ratio': 0.11
     },
     {
-      'product-id': 'ADA-USD',
-      'ratio': 0.11
+      "product-id': "ADA-USD',
+      "ratio': 0.11
     },
     {
-      'product-id': 'LTC-USD',
-      'ratio': 0.11
+      "product-id': "LTC-USD',
+      "ratio': 0.11
     }
   ]
 }
