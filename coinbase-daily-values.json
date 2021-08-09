@@ -5,6 +5,22 @@
     {
       "product-id": "BTC-USD",
       "ratio": 0.33
+    },
+    {
+      "product-id": "ETH-USD",
+      "ratio": 0.33
+    },
+    {
+      "product-id": "DOT-USD",
+      "ratio": 0.12
+    },
+    {
+      "product-id": "ADA-USD",
+      "ratio": 0.11
+    },
+    {
+      "product-id": "ALGO-USD",
+      "ratio": 0.11
     }
   ]
 }
