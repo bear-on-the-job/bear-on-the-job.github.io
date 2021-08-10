@@ -2,7 +2,13 @@
 <html>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-  const csvInput = "portfolio,trade id,product,side,created at,size,size unit,price,fee,total,price/fee/total unit\ndefault,6220,SOL-USD,BUY,2021-06-17T22:22:51.668Z,0.26000000,SOL,38.793,0.0504309,-10.1366109,USD\ndefault,33904,SOL-USD,BUY,2021-06-18T19:43:40.416Z,0.13800000,SOL,35.838,0.02472822,-4.97037222,USD\ndefault,67118,SOL-USD,BUY,2021-06-20T12:37:26.508Z,0.15300000,SOL,32.377,0.024768405,-4.978449405,USD\ndefault,75905,DOT-USD,BUY,2021-06-18T14:24:52.232Z,0.23300000,DOT,21.276,0.02478654,-4.98209454,USD\ndefault,140956,DOT-USD,BUY,2021-06-19T21:07:13.302Z,0.23800000,DOT,20.874,0.02484006,-4.99285206,USD";
+  const csvInput = 
+        `portfolio,trade id,product,side,created at,size,size unit,price,fee,total,price/fee/total unit
+        default,6220,SOL-USD,BUY,2021-06-17T22:22:51.668Z,0.26000000,SOL,38.793,0.0504309,-10.1366109,USD
+        default,33904,SOL-USD,BUY,2021-06-18T19:43:40.416Z,0.13800000,SOL,35.838,0.02472822,-4.97037222,USD
+        default,67118,SOL-USD,BUY,2021-06-20T12:37:26.508Z,0.15300000,SOL,32.377,0.024768405,-4.978449405,USD
+        default,75905,DOT-USD,BUY,2021-06-18T14:24:52.232Z,0.23300000,DOT,21.276,0.02478654,-4.98209454,USD
+        default,140956,DOT-USD,BUY,2021-06-19T21:07:13.302Z,0.23800000,DOT,20.874,0.02484006,-4.99285206,USD`;
   const csv = `${csvInput}`;
   
   //var csv is the CSV file with headers
@@ -27,13 +33,23 @@
   function transformFills(fills) {
     var result = {};
     for(var fill of fills) {
-      var product = result[fill["size unit"]] ??= {};
+      var product = result[fill["size unit"]] ??= {
+        "total-amount": 0,
+        "total-cost": 0,
+        "average-cost": 0,
+      };
       
+      product["total-amount"] += fill["size"];
+      product["total-cost"] += (fill["size"] * fill["price"]);
+      product["average-cost"] = product["total-cost"] / product["total-amount"];      
     }
+    
+    return result;
   }
   
-  document.write(JSON.stringify(csvToArray(csv)));
-  
+  var fills = csvToArray(csv);
+  var transformed = transformFills(fills);
+  document.write(JSON.stringify(transformed));  
   
   /*
   B=SUM(SUMIF(Coinbase!$G$2:$G, A2, Coinbase!$F$2:$F), SUMIF(AnchorUSD!$G$2:$G, A2, AnchorUSD!$F$2:$F), SUMIF(FixedFloat!$E$2:$E, A2, FixedFloat!$F$2:$F), SUMIF(FixedFloat!$I$2:$I, A2, FixedFloat!$J$2:$J))
