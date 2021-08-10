@@ -22,9 +22,9 @@
     //return JSON.stringify(result); 
   }
   
-  function transformFills(fills) {
+  function transformFills(fillsJson) {
     var result = {};
-    for(var fill of fills) {
+    for(var fill of fillsJson) {
       var product = result[fill["size unit"]] ??= {
         "total-amount": 0.0,
         "total-cost": 0.0,
@@ -38,14 +38,14 @@
     
     return result;
   }
+  
+  var fillsJson = [];
 
-  var fills = [];
-
-  for(var product in csvReports) {
-    fills = [...fills, ...csvToArray(csvReports[product])];
+  for(var product in fills) {
+    fillsJson = [...fillsJson, ...csvToArray(fills[product])];
   }
   
-  var transformed = transformFills(fills);
+  var transformed = transformFills(fillsJson);
   document.write(JSON.stringify(transformed));  
   
   /*
