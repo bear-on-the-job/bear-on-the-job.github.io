@@ -34,13 +34,13 @@
     var result = {};
     for(var fill of fills) {
       var product = result[fill["size unit"]] ??= {
-        "total-amount": 0,
-        "total-cost": 0,
-        "average-cost": 0,
+        "total-amount": 0.0,
+        "total-cost": 0.0,
+        "average-cost": 0.0,
       };
       
-      product["total-amount"] += fill["size"];
-      product["total-cost"] += (fill["size"] * fill["price"]);
+      product["total-amount"] += parseFloat(fill["size"]);
+      product["total-cost"] += (parseFloat(fill["size"]) * parseFloat(fill["price"]));
       product["average-cost"] = product["total-cost"] / product["total-amount"];      
     }
     
