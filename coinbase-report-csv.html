@@ -5,8 +5,8 @@
 <script>    
   //var csv is the CSV file with headers
   function csvToArray(csv){
-    var lines=csv.split("\n");
     var result = [];
+    var lines=csv.split("\n");    
     var headers=lines[0].split(",");
 
     for(var i=1;i<lines.length;i++){
@@ -42,7 +42,7 @@
   var fills = [];
 
   for(var product in csvReports) {
-    fills = [...csvToArray(csvReports[product])];
+    fills = [...fills, ...csvToArray(csvReports[product])];
   }
   
   var transformed = transformFills(fills);
