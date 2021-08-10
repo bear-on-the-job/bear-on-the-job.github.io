@@ -42,7 +42,7 @@
   var fills = [];
 
   for(var product in csvReports) {
-    fills = [...csvToArray(product)];
+    fills = [...csvToArray(csvReports[product])];
   }
   
   var transformed = transformFills(fills);
