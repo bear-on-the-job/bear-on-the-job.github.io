@@ -2,17 +2,7 @@
 <html>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://dl.dropboxusercontent.com/s/3z3fmnofhbsjfb4/BTC-USD-csv.js"></script>
-<script>
-  // adding nothing comment @bear-on-the-job
-  const csvInput = 
-        `portfolio,trade id,product,side,created at,size,size unit,price,fee,total,price/fee/total unit
-        default,6220,SOL-USD,BUY,2021-06-17T22:22:51.668Z,0.26000000,SOL,38.793,0.0504309,-10.1366109,USD
-        default,33904,SOL-USD,BUY,2021-06-18T19:43:40.416Z,0.13800000,SOL,35.838,0.02472822,-4.97037222,USD
-        default,67118,SOL-USD,BUY,2021-06-20T12:37:26.508Z,0.15300000,SOL,32.377,0.024768405,-4.978449405,USD
-        default,75905,DOT-USD,BUY,2021-06-18T14:24:52.232Z,0.23300000,DOT,21.276,0.02478654,-4.98209454,USD
-        default,140956,DOT-USD,BUY,2021-06-19T21:07:13.302Z,0.23800000,DOT,20.874,0.02484006,-4.99285206,USD`;
-  const csv = `${csvInput}`;
-  
+<script>    
   //var csv is the CSV file with headers
   function csvToArray(csv){
     var lines=csv.split("\n");
@@ -48,8 +38,13 @@
     
     return result;
   }
+
+  var fills = [];
+
+  for(var product in csvReports) {
+    fills = [...csvToArray(product)];
+  }
   
-  var fills = csvToArray(csv);
   var transformed = transformFills(fills);
   document.write(JSON.stringify(transformed));  
   
