@@ -33,7 +33,7 @@
         "average-cost": 0.0,
       };
       
-      if((/buy/i).test(product["side"])) {
+      if((/buy/i).test(fill["side"])) {
         product["total-amount"] += parseFloat(fill["size"]);
         product["total-cost"] += (parseFloat(fill["size"]) * parseFloat(fill["price"]));
         product["average-cost"] = product["total-cost"] / product["total-amount"];
