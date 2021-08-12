@@ -1,7 +1,10 @@
   
 <html>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.js"></script>
 <script src="https://dl.dropboxusercontent.com/s/zdxw5g0pycmrdvi/fills.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-grid.css">
+<link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-theme-alpine.css">
 <script>    
   //var csv is the CSV file with headers
   function transformFills(fillsCsv){
@@ -42,6 +45,40 @@
     
     return result;
   }
+
+  function convertObjectToHeaders(object, propertyKey) {
+    var result = [];
+
+    for(var property in object) {
+
+      object[property][propertyKey] = property;
+      result.push(object[property]);
+    }
+    
+    return result;
+  }
+
+  function convertObjectToRows(object, propertyKey) {
+    var result = [
+      { field: propertyKey }
+    ];
+
+    var headers = {};
+
+    for(var property in object) {
+      for(var header in object[property]) {
+        headers[header] = true;
+      }
+    }
+
+    for(var header in headers) {
+      result.push(
+        { field: header }
+      );
+    }
+    
+    return result;
+  }
   
   var fillsArray = [];
 
@@ -50,7 +87,19 @@
   }
   
   var processed = processFills(fillsArray);
-  document.write(JSON.stringify(processed));  
+
+  // let the grid know which columns and what data to use
+  const gridOptions = {
+    columnDefs: convertObjectToHeaders(processed, "product-id"),
+    rowData: convertObjectToRows(processed, "product-id")
+  };
+
+  // lookup the container we want the Grid to use
+  const eGridDiv = document.querySelector('#myGrid');
+  // create the grid passing in the div to use together with the columns & data we want to use
+  new agGrid.Grid(eGridDiv, gridOptions);
+
+  //document.write(JSON.stringify(processed));  
   
   /*
   B=SUM(SUMIF(Coinbase!$G$2:$G, A2, Coinbase!$F$2:$F), SUMIF(AnchorUSD!$G$2:$G, A2, AnchorUSD!$F$2:$F), SUMIF(FixedFloat!$E$2:$E, A2, FixedFloat!$F$2:$F), SUMIF(FixedFloat!$I$2:$I, A2, FixedFloat!$J$2:$J))
@@ -59,6 +108,8 @@
   */
   
 </script>
-<body style="background-color:#333333; color: #CCCCCC;"></body>
+<body style="background-color:#333333; color: #CCCCCC;">
+  <div id="myGrid" class="ag-theme-alpine" style="height: 600px; width:500px;"></div>
+</body>
 </html>
 
