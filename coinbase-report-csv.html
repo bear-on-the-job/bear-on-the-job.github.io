@@ -48,22 +48,9 @@
 
   function convertObjectToHeaders(object, propertyKey) {
     var result = [];
-
-    for(var property in object) {
-
-      object[property][propertyKey] = property;
-      result.push(object[property]);
-    }
-    
-    return result;
-  }
-
-  function convertObjectToRows(object, propertyKey) {
-    var result = [
-      { field: propertyKey }
-    ];
-
     var headers = {};
+
+    headers[propertyKey] = true;
 
     for(var property in object) {
       for(var header in object[property]) {
@@ -75,6 +62,18 @@
       result.push(
         { field: header }
       );
+    }
+    
+    return result;
+  }
+
+  function convertObjectToRows(object, propertyKey) {
+    var result = [];
+
+    for(var property in object) {
+
+      object[property][propertyKey] = property;
+      result.push(object[property]);
     }
     
     return result;
