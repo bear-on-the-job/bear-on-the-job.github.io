@@ -105,6 +105,18 @@
     const eGridDiv = document.querySelector('#myGrid');
     // create the grid passing in the div to use together with the columns & data we want to use
     new agGrid.Grid(eGridDiv, gridOptions);
+
+    $.ajax({
+      crossDomain: true,
+      url: "https://api.pro.coinbase.com/products/BTC-USD/stats",
+      method: "GET",
+      success: (data) => {
+        console.log(data);
+      },
+      error: (error) => {
+        console.log(error);
+      }
+    })
   });
 
   //document.write(JSON.stringify(processed));  
