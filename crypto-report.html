@@ -42,6 +42,12 @@
         product["average-cost"]  = +parseFloat(product["total-cost"] / product["total-amount"]);
       }
     }
+
+    for(var product in result) {
+      result[product]["total-amount"] = +parseFloat(result[product]["total-amount"]).toFixed(4);
+      result[product]["total-cost"]   = +parseFloat(result[product]["total-cost"]).toFixed(2);
+      result[product]["average-cost"] = +parseFloat(result[product]["average-cost"]).toFixed(2);
+    }
     
     return result;
   }
