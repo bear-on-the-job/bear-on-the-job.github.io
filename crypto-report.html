@@ -45,8 +45,8 @@
 
     for(var product in result) {
       result[product]["total-amount"] = +parseFloat(result[product]["total-amount"]).toFixed(4);
-      result[product]["total-cost"]   = +parseFloat(result[product]["total-cost"]).toFixed(2);
-      result[product]["average-cost"] = +parseFloat(result[product]["average-cost"]).toFixed(2);
+      result[product]["total-cost"]   = +parseFloat(result[product]["total-cost"]).toFixed(parseFloat(result[product]["total-cost"]) < 0.1 ? 4 : 2);
+      result[product]["average-cost"] = +parseFloat(result[product]["average-cost"]).toFixed(parseFloat(result[product]["average-cost"]) < 0.1 ? 4 : 2);
     }
     
     return result;
