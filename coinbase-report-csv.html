@@ -4,9 +4,9 @@
 <script src="https://dl.dropboxusercontent.com/s/zdxw5g0pycmrdvi/fills.js"></script>
 <script>    
   //var csv is the CSV file with headers
-  function csvToArray(csv){
+  function transformFills(fillsCsv){
     var result = [];
-    var lines=csv.split("\n");    
+    var lines=fillsCsv.split("\n");    
     var headers=lines[0].split(",");
 
     for(var i=1;i<lines.length;i++){
@@ -24,9 +24,9 @@
     //return JSON.stringify(result); 
   }
   
-  function transformFills(fillsJson) {
+  function processFills(fillsArray) {
     var result = {};
-    for(var fill of fillsJson) {
+    for(var fill of fillsArray) {
       var product = result[fill["size unit"]] ??= {
         "total-amount": 0.0,
         "total-cost": 0.0,
@@ -41,14 +41,14 @@
     return result;
   }
   
-  var fillsJson = [];
+  var fillsArray = [];
 
-  for(var product in fills) {
-    fillsJson = [...fillsJson, ...csvToArray(fills[product])];
+  for(var source in fillsCsv) {
+    fillsArray = [...fillsArray, ...transformFills(fillsCsv[source])];
   }
   
-  var transformed = transformFills(fillsJson);
-  document.write(JSON.stringify(transformed));  
+  var processed = processFills(fillsArray);
+  document.write(JSON.stringify(processed));  
   
   /*
   B=SUM(SUMIF(Coinbase!$G$2:$G, A2, Coinbase!$F$2:$F), SUMIF(AnchorUSD!$G$2:$G, A2, AnchorUSD!$F$2:$F), SUMIF(FixedFloat!$E$2:$E, A2, FixedFloat!$F$2:$F), SUMIF(FixedFloat!$I$2:$I, A2, FixedFloat!$J$2:$J))
