@@ -103,7 +103,7 @@
         // Authorization scopes required by the API; multiple scopes can be
         // included, separated by spaces.
         SCOPES: "https://www.googleapis.com/auth/spreadsheets",
-        SHEET_ID: '1zaTe6roOJZB5zKxSdQJB6vbss7UsCVD_JXAJRYgnM1M',
+        SHEET_ID: '1TtpXHXcIl0o6ibEIHZwiH6_4p-ZpjBboYjCq6TSdQSI',
         RANGE: 'CreditCards!A2:C',
         ROW: {
           NUMBER: 0,
