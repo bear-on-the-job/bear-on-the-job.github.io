@@ -134,14 +134,15 @@
         });
       })};
 
-      var signinStatus = async (isSignedIn) => {
+      var signinStatus = async (isSignedIn) => { return new Promise(resolve => {
         if(!isSignedIn){
           gapi.auth2.getAuthInstance().signIn();
         } else {
           // Do nothing...
         }
         await loadCreditCards();
-      }
+        resolve();
+      })};
 
       await (new Promise(resolve => {
         gapi.load('client:auth2', function () {
@@ -154,7 +155,7 @@
             // Listen for sign-in state changes.
             gapi.auth2.getAuthInstance().isSignedIn.listen(signinStatus);
             // Handle the initial sign-in state.
-            signinStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+            await signinStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
             resolve();
           }, function(error) {
             console.log(JSON.stringify(error, null, 2));
