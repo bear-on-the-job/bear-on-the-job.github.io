@@ -164,6 +164,31 @@
         });
       }));
 
+
+      var requests = [
+        {
+          deleteDimension: {
+            range: {
+              sheetId: 0,
+              dimension: "ROWS",
+              startIndex: 1,
+              endIndex: 1
+            }
+          }
+        }
+      ];
+
+      gapi.client.sheets.spreadsheets.batchUpdate({
+        spreadsheetId: GOOGLE_SHEETS.SHEET_ID,
+        resource: {requests: requests}
+      }).then((response) => {
+        console.log('Batch Update: ' + response);
+      }, (response) => {
+        console.log('Error: ' + response.result.error.message);
+      });
+
+      /*
+      // Works to clear the cells, but not delete them...
       gapi.client.sheets.spreadsheets.values.clear({
         spreadsheetId: GOOGLE_SHEETS.SHEET_ID,
         range: 'CreditCards!A2:C2',
@@ -172,6 +197,7 @@
       }, function(response) {
         console.log('Clear Error: ' + response.result.error.message);
       });
+      */
       
     }
     
