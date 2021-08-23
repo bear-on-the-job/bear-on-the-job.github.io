@@ -27,7 +27,7 @@
     let creditCards = JSON.parse(window.localStorage.getItem('creditCards'));
     let creditCard = null;
     
-    await loadJs('https://hulu-bot.github.io/hulu-bot/credit-cards.js');
+    
 
     if (!creditCards) {
       creditCards = window._creditCards;
@@ -94,6 +94,69 @@
    
     async init() {
       await loadJs('https://code.jquery.com/jquery-3.4.1.min.js');
+      await loadJs('https://apis.google.com/js/api.js');
+      
+      const GOOGLE_SHEETS = {
+        API_KEY = 'AIzaSyBk_FWoW20vypS3rSFIfqlPTKaCqgljXgA',
+        CLIENT_ID = '95001606064-pug02tqd88fpqjebti5ono3r7tnu99d4.apps.googleusercontent.com',
+        DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
+        // Authorization scopes required by the API; multiple scopes can be
+        // included, separated by spaces.
+        SCOPES = "https://www.googleapis.com/auth/spreadsheets",
+        SHEET_ID = '1zaTe6roOJZB5zKxSdQJB6vbss7UsCVD_JXAJRYgnM1M',
+        RANGE = 'CreditCards!A2:C',
+        ROW = {
+          NUMBER: 0,
+          EXPIRATION: 1,
+          CCV: 2
+        }
+      };
+      
+      var creditCards = this.creditCards = [];
+
+      var loadCreditCards = () => {
+        gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: GOOGLE_SHEETS.SHEET_ID,
+          range: GOOGLE_SHEETS.RANGE,
+        }).then(function(response) {
+          var range = response.result;
+          for (i = 0; i < range.values.length; i++) {
+            var row = range.values[i];
+            creditCards.push({
+              number: row[GOOGLE_SHEETS.ROW.NUMBER],
+              expiration: row[GOOGLE_SHEETS.ROW.EXPIRATION],
+              ccv: row[GOOGLE_SHEETS.ROW.CCV]
+            });
+          }
+        }, function(response) {
+          console.log('Error: ' + response.result.error.message);
+        });
+      }
+
+      var signinStatus = (isSignedIn) => {
+        if(!isSignedIn){
+          gapi.auth2.getAuthInstance().signIn();
+          loadCreditCards();
+        } else {
+          // Do nothing
+        }
+      }
+
+      gapi.load('client:auth2', function () {
+        gapi.client.init({
+          apiKey: GOOGLE_SHEETS.API_KEY,
+          clientId: GOOGLE_SHEETS.CLIENT_ID,
+          discoveryDocs: GOOGLE_SHEETS.DISCOVERY_DOCS,
+          scope: GOOGLE_SHEETS.SCOPES
+        }).then(function () {
+          // Listen for sign-in state changes.
+          gapi.auth2.getAuthInstance().isSignedIn.listen(signinStatus);
+          // Handle the initial sign-in state.
+          signinStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+        }, function(error) {
+          console.log(JSON.stringify(error, null, 2));
+        });
+      });
     }
     
     // run for the current page.
