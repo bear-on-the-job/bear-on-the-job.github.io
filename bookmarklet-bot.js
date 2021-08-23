@@ -162,6 +162,11 @@
       await until(() => ($(query).val().replace(/\s/g,'') == string.replace(/\s/g,'')));
     }
   }
+
+  async function clearCookies() {
+    document.title = 'BotHelper:ClearCookies()';
+    await until(() => document.title.includes('Updated'));
+  }
   
   /*===========================================================================
     Hulu processing class
@@ -261,12 +266,14 @@
     }
     
     async accountClear() {
-      deleteCookies();
+      //deleteCookies();
+      await clearCookies();
       window.location.href = "https://auth.hulu.com"
     }
     
     async authClear() {
-      deleteCookies();
+      //deleteCookies();
+      await clearCookies();
       window.location.href = "https://signup.hulu.com"
     }
   }
