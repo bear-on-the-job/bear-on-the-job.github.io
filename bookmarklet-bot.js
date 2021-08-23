@@ -108,38 +108,6 @@
     }
   }
   
-  class PageMonitor {
-    constructor() {}
-    
-    async $(query) {
-      let found = null;
-      while(!(found = $(query)) || !found.length) {
-        await sleep(1000);
-      }      
-      return found;
-    }
-    
-    async click(query) {
-      let found = null;
-      while(!(found = query()) || !found.length) {
-        await sleep(1000);
-      }      
-      if(found.click) {
-        found.click();
-      }
-    }
-    
-    async fill(query, value) {
-      let found = null;
-      while(!(found = query()) || !found.length) {
-        await sleep(1000);
-      }      
-      if(found.value) {
-        found.click();
-      }
-    }
-  }
-  
   async function find(query) {
     let found = null;
     while(!(found = $(query)) || !found.length) {
@@ -171,7 +139,7 @@
   /*===========================================================================
     Hulu processing class
   ===========================================================================*/
-  class Hulu extends PageMonitor {
+  class Hulu {
     constructor(url) { 
       super(); 
       this.url = url;
@@ -281,7 +249,7 @@
   /*===========================================================================
     Capital One 
   ===========================================================================*/
-  class CapitalOne extends PageMonitor {
+  class CapitalOne {
     constructor(url) { 
       super(); 
       this.url = url;
