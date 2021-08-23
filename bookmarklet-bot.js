@@ -114,7 +114,7 @@
 
       var creditCards = this.creditCards = [];
 
-      var loadCreditCards = () => {
+      var loadCreditCards = async () => { return new Promise(resolve => {
         gapi.client.sheets.spreadsheets.values.get({
           spreadsheetId: GOOGLE_SHEETS.SHEET_ID,
           range: GOOGLE_SHEETS.RANGE,
@@ -127,35 +127,42 @@
               ccv: row[GOOGLE_SHEETS.ROW.CCV]
             });
           }
+          resolve();
         }, function(response) {
           console.log('Error: ' + response.result.error.message);
+          resolve();
         });
-      }
+      })};
 
-      var signinStatus = (isSignedIn) => {
+      var signinStatus = async (isSignedIn) => {
         if(!isSignedIn){
           gapi.auth2.getAuthInstance().signIn();
         } else {
           // Do nothing...
         }
-        loadCreditCards();
+        await loadCreditCards();
       }
 
-      gapi.load('client:auth2', function () {
-        gapi.client.init({
-          apiKey: GOOGLE_SHEETS.API_KEY,
-          clientId: GOOGLE_SHEETS.CLIENT_ID,
-          discoveryDocs: GOOGLE_SHEETS.DISCOVERY_DOCS,
-          scope: GOOGLE_SHEETS.SCOPES
-        }).then(function () {
-          // Listen for sign-in state changes.
-          gapi.auth2.getAuthInstance().isSignedIn.listen(signinStatus);
-          // Handle the initial sign-in state.
-          signinStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-        }, function(error) {
-          console.log(JSON.stringify(error, null, 2));
+      await (new Promise(resolve => {
+        gapi.load('client:auth2', function () {
+          gapi.client.init({
+            apiKey: GOOGLE_SHEETS.API_KEY,
+            clientId: GOOGLE_SHEETS.CLIENT_ID,
+            discoveryDocs: GOOGLE_SHEETS.DISCOVERY_DOCS,
+            scope: GOOGLE_SHEETS.SCOPES
+          }).then(function () {
+            // Listen for sign-in state changes.
+            gapi.auth2.getAuthInstance().isSignedIn.listen(signinStatus);
+            // Handle the initial sign-in state.
+            signinStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+            resolve();
+          }, function(error) {
+            console.log(JSON.stringify(error, null, 2));
+            resolve();
+          });
         });
-      });
+      }));
+      
     }
     
     // run for the current page.
