@@ -136,10 +136,10 @@
       var signinStatus = (isSignedIn) => {
         if(!isSignedIn){
           gapi.auth2.getAuthInstance().signIn();
-          loadCreditCards();
         } else {
-          // Do nothing
+          // Do nothing...
         }
+        loadCreditCards();
       }
 
       gapi.load('client:auth2', function () {
