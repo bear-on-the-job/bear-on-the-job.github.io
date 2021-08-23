@@ -120,8 +120,7 @@
           range: GOOGLE_SHEETS.RANGE,
         }).then(function(response) {
           var range = response.result;
-          for (i = 0; i < range.values.length; i++) {
-            var row = range.values[i];
+          for (const row of range.values) {
             creditCards.push({
               number: row[GOOGLE_SHEETS.ROW.NUMBER],
               expiration: row[GOOGLE_SHEETS.ROW.EXPIRATION],
