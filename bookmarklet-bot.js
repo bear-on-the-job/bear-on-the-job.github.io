@@ -97,21 +97,21 @@
       await loadJs('https://apis.google.com/js/api.js');
       
       const GOOGLE_SHEETS = {
-        API_KEY = 'AIzaSyBk_FWoW20vypS3rSFIfqlPTKaCqgljXgA',
-        CLIENT_ID = '95001606064-pug02tqd88fpqjebti5ono3r7tnu99d4.apps.googleusercontent.com',
-        DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
+        API_KEY: 'AIzaSyBk_FWoW20vypS3rSFIfqlPTKaCqgljXgA',
+        CLIENT_ID: '95001606064-pug02tqd88fpqjebti5ono3r7tnu99d4.apps.googleusercontent.com',
+        DISCOVERY_DOCS: ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
         // Authorization scopes required by the API; multiple scopes can be
         // included, separated by spaces.
-        SCOPES = "https://www.googleapis.com/auth/spreadsheets",
-        SHEET_ID = '1zaTe6roOJZB5zKxSdQJB6vbss7UsCVD_JXAJRYgnM1M',
-        RANGE = 'CreditCards!A2:C',
-        ROW = {
+        SCOPES: "https://www.googleapis.com/auth/spreadsheets",
+        SHEET_ID: '1zaTe6roOJZB5zKxSdQJB6vbss7UsCVD_JXAJRYgnM1M',
+        RANGE: 'CreditCards!A2:C',
+        ROW: {
           NUMBER: 0,
           EXPIRATION: 1,
           CCV: 2
         }
       };
-      
+
       var creditCards = this.creditCards = [];
 
       var loadCreditCards = () => {
@@ -163,10 +163,10 @@
     run() {
       if(window.location.hostname.includes('hulu.com')) {
         this.hulu = new Hulu(window.location.href);
-        this.hulu.check();
+        //this.hulu.check();
       } else if(window.location.hostname.includes('capitalone.com')) {
         this.capitalOne = new CapitalOne(window.location.href);
-        this.capitalOne.check();
+        //this.capitalOne.check();
       }
     }
   }
