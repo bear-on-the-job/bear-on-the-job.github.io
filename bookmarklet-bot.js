@@ -114,35 +114,36 @@
 
       var creditCards = this.creditCards = [];
 
-      var loadCreditCards = async () => { return new Promise(resolve => {
-        gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: GOOGLE_SHEETS.SHEET_ID,
-          range: GOOGLE_SHEETS.RANGE,
-        }).then(function(response) {
-          var range = response.result;
-          for (const row of range.values) {
-            creditCards.push({
-              number: row[GOOGLE_SHEETS.ROW.NUMBER],
-              expiration: row[GOOGLE_SHEETS.ROW.EXPIRATION],
-              ccv: row[GOOGLE_SHEETS.ROW.CCV]
-            });
-          }
-          resolve();
-        }, function(response) {
-          console.log('Error: ' + response.result.error.message);
-          resolve();
-        });
-      })};
+      var loadCreditCards = function () {
+        return new Promise(resolve => {
+          gapi.client.sheets.spreadsheets.values.get({
+            spreadsheetId: GOOGLE_SHEETS.SHEET_ID,
+            range: GOOGLE_SHEETS.RANGE,
+          }).then(function(response) {
+            var range = response.result;
+            for (const row of range.values) {
+              creditCards.push({
+                number: row[GOOGLE_SHEETS.ROW.NUMBER],
+                expiration: row[GOOGLE_SHEETS.ROW.EXPIRATION],
+                ccv: row[GOOGLE_SHEETS.ROW.CCV]
+              });
+            }
+            resolve();
+          }, function(response) {
+            console.log('Error: ' + response.result.error.message);
+            resolve();
+          });
+        })
+      };
 
-      var signinStatus = async (isSignedIn) => { return new Promise(resolve => {
+      var signinStatus = async function (isSignedIn) { 
         if(!isSignedIn){
           gapi.auth2.getAuthInstance().signIn();
         } else {
           // Do nothing...
         }
         await loadCreditCards();
-        resolve();
-      })};
+      };
 
       await (new Promise(resolve => {
         gapi.load('client:auth2', function () {
@@ -151,7 +152,7 @@
             clientId: GOOGLE_SHEETS.CLIENT_ID,
             discoveryDocs: GOOGLE_SHEETS.DISCOVERY_DOCS,
             scope: GOOGLE_SHEETS.SCOPES
-          }).then(function () {
+          }).then(async function () {
             // Listen for sign-in state changes.
             gapi.auth2.getAuthInstance().isSignedIn.listen(signinStatus);
             // Handle the initial sign-in state.
