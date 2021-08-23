@@ -93,9 +93,7 @@
     constructor() {}
    
     async init() {
-      await loadJs('https://code.jquery.com/jquery-3.4.1.min.js');
-      await loadJs('https://apis.google.com/js/api.js');
-      
+      const creditCards = this.creditCards = [];
       const GOOGLE_SHEETS = {
         API_KEY: 'AIzaSyBk_FWoW20vypS3rSFIfqlPTKaCqgljXgA',
         CLIENT_ID: '95001606064-pug02tqd88fpqjebti5ono3r7tnu99d4.apps.googleusercontent.com',
@@ -112,9 +110,10 @@
         }
       };
 
-      var creditCards = this.creditCards = [];
+      await loadJs('https://code.jquery.com/jquery-3.4.1.min.js');
+      await loadJs('https://apis.google.com/js/api.js');
 
-      var loadCreditCards = function () {
+      const loadCreditCards = function () {
         return new Promise(resolve => {
           gapi.client.sheets.spreadsheets.values.get({
             spreadsheetId: GOOGLE_SHEETS.SHEET_ID,
@@ -136,7 +135,7 @@
         })
       };
 
-      var signinStatus = async function (isSignedIn) { 
+      const signinStatus = async function (isSignedIn) { 
         if(!isSignedIn){
           gapi.auth2.getAuthInstance().signIn();
         } else {
@@ -164,6 +163,15 @@
           });
         });
       }));
+
+      gapi.client.sheets.spreadsheets.values.clear({
+        spreadsheetId: GOOGLE_SHEETS.SHEET_ID,
+        range: 'CreditCards!A2:C2',
+      }).then(function(response) {
+        console.log('Cleared: ' + response);
+      }, function(response) {
+        console.log('Clear Error: ' + response.result.error.message);
+      });
       
     }
     
