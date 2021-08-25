@@ -320,6 +320,7 @@
         gapi.client.sheets.spreadsheets.values.append({
           spreadsheetId: GOOGLE_SHEETS.SHEET_ID,
           range: 'A1:D1',
+          valueInputOption: 'USER_ENTERED',
           resource: {values: values}
         }).then((response) => {
           console.log(`Batch Update:\n${JSON.stringify(response)}`);
