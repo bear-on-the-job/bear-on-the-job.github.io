@@ -154,7 +154,7 @@
       // included, separated by spaces.
       SCOPES: "https://www.googleapis.com/auth/spreadsheets",
       SHEET_ID: '1TtpXHXcIl0o6ibEIHZwiH6_4p-ZpjBboYjCq6TSdQSI',
-      RANGE: 'CreditCards!A2:C',
+      RANGE: 'CreditCards!A2:D',
       ROW: {
         NUMBER: 0,
         EXPIRATION: 1,
@@ -216,7 +216,7 @@
         }).then(function(response) {
           var range = response.result;
           var creditCards = [];
-          for (const row of range.values) {
+          for (const row of range.values ?? []) {
             creditCards.push({
               number: row[GOOGLE_SHEETS.ROW.NUMBER],
               expiration: row[GOOGLE_SHEETS.ROW.EXPIRATION],
