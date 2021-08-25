@@ -349,17 +349,19 @@
      * Adds a new credit card to the google sheet
      * 
      * @param {object} creditCard 
-     *  New credit card object to be added
+     *  New credit card object to be added.
+     * @returns {boolean}
+     *  True if success, false if failure.
      */
     async add (creditCard) {
       const columns = [
-        creditCard.number,
-        creditCard.expiration,
-        creditCard.ccv,
-        creditCard.zip
+        creditCard?.number,
+        creditCard?.expiration,
+        creditCard?.ccv,
+        creditCard?.zip
       ];
 
-      await this._addRow(columns);
+      return await this._addRow(columns);
     }
   }
 
@@ -388,15 +390,19 @@
   }
   
   
-  
-  /*===========================================================================
-    Hulu processing class
-  ===========================================================================*/
+  /**
+   * ==========================================================================
+   * Hulu processing class
+   * ==========================================================================
+   */
   class Hulu {
     constructor(url) { 
       this.url = url;
     }
     
+    /**
+     * Main function to determine which page processor to call
+     */
     check() {
       if (this.url.includes('hulu.com/start/affiliate?')) {
         this.affiliate();
@@ -421,10 +427,16 @@
       }
     }
     
+    /**
+     * 
+     */
     async affiliate() {
       window.location.href = "https://www.hulu.com";
     }
     
+    /**
+     * 
+     */
     async welcome() {
       if(flag('bot-welcome')) {
         deleteCookies();
@@ -434,6 +446,9 @@
       }
     }
     
+    /**
+     * 
+     */
     async plans() {
       if(flag('bot-signup')) {
         deleteCookies();
@@ -443,6 +458,9 @@
       }
     }
     
+    /**
+     * 
+     */
     async account() {
       flag('bot-signup');
       let email = 'john.smith.' + new Date().getTime() + '@loveisapolaroid.com'
@@ -459,6 +477,9 @@
       (await find('.button--continue:contains("CONTINUE")')).click();      
     }
     
+    /**
+     * 
+     */
     async billing() {
       flag('bot-signup');
       var creditCards = new CreditCards();
@@ -473,26 +494,33 @@
       (await find('button[type="submit"]:contains("SUBMIT")')).click();
     }
     
+    /**
+     * 
+     */
     async addons() {
       window.location.href = 'https://secure.hulu.com/account/cancel';
     }
     
+    /**
+     * 
+     */
     async accountCancel() {
       (await find('button:contains("Continue to Cancel"), button:contains("Cancel Subscription"), button:contains("Go to Account")')).click();
       (await find('label[for="survey-other"]:contains("Other")')).click();
-      
-      //await fill('#form-input-password', 'rewards1');
-      //<button class="Button VerifyPassword__button Button--block Button--cta" type="submit" data-testid="cta-button" data-automationid="cta-button">Log in</button>
-      //find('#form-input-password')).click();
-      //<button class="Button Button--cta" type="button" data-testid="cta-button" data-automationid="cta-button">Go to Account</button>
     }
     
+    /**
+     * 
+     */
     async accountClear() {
       //deleteCookies();
       await clearCookies();
       window.location.href = "https://auth.hulu.com"
     }
     
+    /**
+     * 
+     */
     async authClear() {
       //deleteCookies();
       await clearCookies();
@@ -584,6 +612,9 @@
   await creditCards.init();
   let creditCard = await creditCards.get();
   let success = await creditCards.add(creditCard);
+
+  await clearCookies();
+
   success = !success;
   
 })();
