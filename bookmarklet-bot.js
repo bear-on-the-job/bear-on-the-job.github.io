@@ -302,6 +302,36 @@
     }
 
     /**
+     * 
+     * @param {Array} columns 
+     *  Array of values to be added as the columns for this row.
+     * @returns {Promise<boolean>}
+     *  True if success, false if failure.
+     */
+    _addRow (columns) {
+      const GOOGLE_SHEETS = this.GOOGLE_SHEETS;
+
+      // build request based on start an end. 
+      const values = [
+        columns
+      ];
+
+      return new Promise(resolve => {
+        gapi.client.sheets.spreadsheets.values.append({
+          spreadsheetId: GOOGLE_SHEETS.SHEET_ID,
+          range: 'A1:D1',
+          resource: {values: values}
+        }).then((response) => {
+          console.log(`Batch Update:\n${JSON.stringify(response)}`);
+          resolve(true);
+        }, (response) => {
+          console.log(`Error: ${response.result.error.message}`);
+          resolve(false);
+        });
+      });
+    }
+
+    /**
      * Gets one credit card from google sheet, and immediately deletes
      * it from the sheet so it can't be reused again.
      * 
@@ -312,6 +342,23 @@
       var result = (await this._loadCreditCards())?.[0];
       await this._deleteRows(1,2);
       return result;
+    }
+
+    /**
+     * Adds a new credit card to the google sheet
+     * 
+     * @param {object} creditCard 
+     *  New credit card object to be added
+     */
+    async add (creditCard) {
+      const columns = [
+        creditCard.number,
+        creditCard.expiration,
+        creditCard.ccv,
+        creditCard.zip
+      ];
+
+      await this._addRow(columns);
     }
   }
 
@@ -535,7 +582,8 @@
   let creditCards = new CreditCards();
   await creditCards.init();
   let creditCard = await creditCards.get();
-  let number = creditCard.number;
+  let success = await creditCards.add(creditCard);
+  success = !success;
   
 })();
 
