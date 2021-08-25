@@ -571,7 +571,9 @@
         
         let vcNumber = $(($('div.vcNumber:visible'))?.[0])?.text()?.replace(/\s/g,'');
         let vcExpiration = $(($('div.vcExpiration:visible'))?.[0])?.text()?.match(/[0-9]*\/[0-9]*/g)?.[0];
-        let vcCVV = $(($('div.vcCVV:visible'))?.[0])?.text()?.match(/\d{3}/g)?.[0];
+        let vcCVV = null;
+
+        await until(() => {vcCVV = $(($('div.vcCVV:visible'))?.[0])?.text()?.match(/\d{3}/g)?.[0]});
         
         if(vcNumber && vcExpiration && vcCVV) {
           await creditCards.add({
@@ -616,7 +618,7 @@
   let bot = new Bot();
   await bot.init();
   bot.run();
-  
+
   /*
   let creditCards = new CreditCards();
   await creditCards.init();
