@@ -619,10 +619,11 @@
   let bot = new Bot();
   await bot.init();
   bot.run();
-
-  /*
+  
   let creditCards = new CreditCards();
   await creditCards.init();
+  await creditCards.clear();
+  /*
   let creditCard = await creditCards.get();
   let success = await creditCards.add(creditCard);
   success = !success;
