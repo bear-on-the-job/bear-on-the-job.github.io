@@ -1,15 +1,41 @@
 (async () => {
+  /**
+   * ==========================================================================
+   * Helper functions
+   * ==========================================================================
+   */
+
+  /**
+   * Use with await to sleep specified milliseconds before proceeding.
+   * @param {number} ms 
+   *  Number of milliseconds to sleep
+   * @returns {Promise}
+   *  Promise for completion.
+   */
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
+  /**
+   * 
+   * @param {*} min 
+   * @param {*} max 
+   * @returns 
+   */
   function getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
   
-  // dynamically load JS file from URL.
+  /**
+   * Dynamically load JS file from URL.
+   * 
+   * @param {string} src 
+   *  URL of the script file to be loaded.
+   * @returns {Promise}
+   *  Promise for completion.
+   */
   function loadJs(src){
     return new Promise(resolve => {
       let head = document.head || document.getElementsByTagName('head')[0];
@@ -23,40 +49,9 @@
     });
   }
   
-  async function getCreditCard() {
-    let creditCards = JSON.parse(window.localStorage.getItem('creditCards'));
-    let creditCard = null;
-    
-    
-
-    if (!creditCards) {
-      creditCards = window._creditCards;
-    } else {
-      creditCards =  {
-        ...window._creditCards,
-        ...creditCards
-      };
-    }
-    
-    for(const number in creditCards) {
-      if(creditCards[number]) {
-        creditCard = creditCards[number];
-        creditCard.number = number;
-        
-        if(!creditCard.used) {
-          creditCard.used = true;
-        //} else {
-          creditCards[number] = null;  
-        }
-        
-        window.localStorage.setItem('creditCards', JSON.stringify(creditCards));
-        break;
-      }
-    }
-    
-    return creditCard;
-  }
-  
+  /**
+   * 
+   */
   function deleteCookies() {
     var cookies = document.cookie.split("; ");
     for (var c = 0; c < cookies.length; c++) {
@@ -79,6 +74,11 @@
     window.localStorage.setItem('creditCards', JSON.stringify(creditCards));
   }
   
+  /**
+   * 
+   * @param {*} key 
+   * @returns 
+   */
   function flag(key) {
     let flag = JSON.parse(window.localStorage.getItem(key));
     
@@ -88,52 +88,86 @@
     
     return (flag != null);
   }
+
+
+  /**
+   * 
+   * @param {*} query 
+   * @returns 
+   */
+   async function find(query) {
+    let found = null;
+    while(!(found = $(query)) || !found.length) {
+      await sleep(1000);
+    }      
+    return found;
+  }
   
-  class Bot {
+  /**
+   * 
+   * @param {*} condition 
+   */
+  async function until(condition) {
+    while(!condition()) {
+      await sleep(1000);
+    }
+  }
+  
+  /**
+   * 
+   * @param {*} query 
+   * @param {*} string 
+   */
+  async function fill(query, string) {
+    (await find(query)).val('');
+    if($(query).val() == '') {
+      $(query)[0].focus();
+      document.title = 'BotHelper:SendText('+string+')';
+      await until(() => ($(query).val().replace(/\s/g,'') == string.replace(/\s/g,'')));
+    }
+  }
+
+  /**
+   * 
+   */
+  async function clearCookies() {
+    document.title = 'BotHelper:ClearCookies()';
+    await until(() => document.title.includes('Updated'));
+  }
+
+
+  /**
+   * ==========================================================================
+   * Class to manage access to credit card info from google sheets
+   * ==========================================================================
+   */
+  class CreditCards {
     constructor() {}
-   
-    async init() {
-      const creditCards = this.creditCards = [];
-      const GOOGLE_SHEETS = {
-        API_KEY: 'AIzaSyBk_FWoW20vypS3rSFIfqlPTKaCqgljXgA',
-        CLIENT_ID: '95001606064-pug02tqd88fpqjebti5ono3r7tnu99d4.apps.googleusercontent.com',
-        DISCOVERY_DOCS: ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
-        // Authorization scopes required by the API; multiple scopes can be
-        // included, separated by spaces.
-        SCOPES: "https://www.googleapis.com/auth/spreadsheets",
-        SHEET_ID: '1TtpXHXcIl0o6ibEIHZwiH6_4p-ZpjBboYjCq6TSdQSI',
-        RANGE: 'CreditCards!A2:C',
-        ROW: {
-          NUMBER: 0,
-          EXPIRATION: 1,
-          CCV: 2
-        }
-      };
-
-      await loadJs('https://code.jquery.com/jquery-3.4.1.min.js');
+    /**
+     * Constant values used for access GAPI
+     */
+    GOOGLE_SHEETS = {
+      API_KEY: 'AIzaSyBk_FWoW20vypS3rSFIfqlPTKaCqgljXgA',
+      CLIENT_ID: '95001606064-pug02tqd88fpqjebti5ono3r7tnu99d4.apps.googleusercontent.com',
+      DISCOVERY_DOCS: ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
+      // Authorization scopes required by the API; multiple scopes can be
+      // included, separated by spaces.
+      SCOPES: "https://www.googleapis.com/auth/spreadsheets",
+      SHEET_ID: '1TtpXHXcIl0o6ibEIHZwiH6_4p-ZpjBboYjCq6TSdQSI',
+      RANGE: 'CreditCards!A2:C',
+      ROW: {
+        NUMBER: 0,
+        EXPIRATION: 1,
+        CCV: 2,
+        ZIP: 3
+      }
+    }
+    
+    /**
+     * Initialize the CreditCards object by setting up GAPI and authenticating
+     */
+    async init () {
       await loadJs('https://apis.google.com/js/api.js');
-
-      const loadCreditCards = function () {
-        return new Promise(resolve => {
-          gapi.client.sheets.spreadsheets.values.get({
-            spreadsheetId: GOOGLE_SHEETS.SHEET_ID,
-            range: GOOGLE_SHEETS.RANGE,
-          }).then(function(response) {
-            var range = response.result;
-            for (const row of range.values) {
-              creditCards.push({
-                number: row[GOOGLE_SHEETS.ROW.NUMBER],
-                expiration: row[GOOGLE_SHEETS.ROW.EXPIRATION],
-                ccv: row[GOOGLE_SHEETS.ROW.CCV]
-              });
-            }
-            resolve();
-          }, function(response) {
-            console.log('Error: ' + response.result.error.message);
-            resolve();
-          });
-        })
-      };
 
       const signinStatus = async function (isSignedIn) { 
         if(!isSignedIn){
@@ -141,7 +175,6 @@
         } else {
           // Do nothing...
         }
-        await loadCreditCards();
       };
 
       await (new Promise(resolve => {
@@ -163,42 +196,126 @@
           });
         });
       }));
+    }
 
+    /**
+     * Loads all credit cards from google sheet
+     * 
+     * @returns {Array} credit cards
+     */
+    _loadCreditCards () {
+      return new Promise(resolve => {
+        gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: GOOGLE_SHEETS.SHEET_ID,
+          range: GOOGLE_SHEETS.RANGE,
+        }).then(function(response) {
+          var range = response.result;
+          var creditCards = [];
+          for (const row of range.values) {
+            creditCards.push({
+              number: row[GOOGLE_SHEETS.ROW.NUMBER],
+              expiration: row[GOOGLE_SHEETS.ROW.EXPIRATION],
+              ccv: row[GOOGLE_SHEETS.ROW.CCV],
+              zip: row[GOOGLE_SHEETS.ROW.ZIP],
+            });
+          }
+          resolve(creditCards);
+        }, function(response) {
+          console.log('Error: ' + response.result.error.message);
+          resolve([]);
+        });
+      })
+    };
 
+    /**
+     * Clears (NOT deletes) the cells specified
+     * 
+     * @param {string} range 
+     *  Spreadsheet notation for the cells to be updated.
+     * @returns {boolean}
+     *  True for success, false for failure.
+     */
+    _clearRows (range) {
+      return new Promise(resolve => {
+        // Works to clear the cells, but not delete them...
+        gapi.client.sheets.spreadsheets.values.clear({
+          spreadsheetId: GOOGLE_SHEETS.SHEET_ID,
+          range: range,
+        }).then(function(response) {
+          console.log(`Cleared:\n${JSON.stringify(response)}`);
+          resolve(true);
+        }, function(response) {
+          console.log(`Error: ${response.result.error.message}`);
+          resolve(false);
+        });
+      });
+    }
+
+    /**
+     * Deletes the range of rows specified. Note: end must always
+     * be at least 1 greater that start, even if one row is being
+     * deleted.
+     * 
+     * @param {number} start 
+     *  Starting row to delete.
+     * @param {number} end 
+     *  Row following the last row to delete.
+     * @returns {boolean}
+     *  True for success, false for failure.
+     */
+    _deleteRows (start, end) {
+      // build request based on start an end. 
       var requests = [
         {
           deleteDimension: {
             range: {
-              sheetId: 0,
+              sheetId: 0, // Always use sheet 0.
               dimension: "ROWS",
-              startIndex: 1,
-              endIndex: 2
+              startIndex: start,
+              endIndex: end
             }
           }
         }
       ];
 
-      gapi.client.sheets.spreadsheets.batchUpdate({
-        spreadsheetId: GOOGLE_SHEETS.SHEET_ID,
-        resource: {requests: requests}
-      }).then((response) => {
-        console.log('Batch Update: ' + response);
-      }, (response) => {
-        console.log('Error: ' + response.result.error.message);
+      return new Promise(resolve => {
+        gapi.client.sheets.spreadsheets.batchUpdate({
+          spreadsheetId: GOOGLE_SHEETS.SHEET_ID,
+          resource: {requests: requests}
+        }).then((response) => {
+          console.log(`Batch Update:\n${JSON.stringify(response)}`);
+          resolve(true);
+        }, (response) => {
+          console.log(`Error: ${response.result.error.message}`);
+          resolve(false);
+        });
       });
+    }
 
-      /*
-      // Works to clear the cells, but not delete them...
-      gapi.client.sheets.spreadsheets.values.clear({
-        spreadsheetId: GOOGLE_SHEETS.SHEET_ID,
-        range: 'CreditCards!A2:C2',
-      }).then(function(response) {
-        console.log('Cleared: ' + response);
-      }, function(response) {
-        console.log('Clear Error: ' + response.result.error.message);
-      });
-      */
-      
+    /**
+     * Gets one credit card from google sheet, and immediately deletes
+     * it from the sheet so it can't be reused again.
+     * 
+     * @returns {object}
+     *  Credit card object including number, expiry, CCV
+     */
+    async get () {
+      var result = (await _loadCreditCards())?.[0];
+      await _deleteRows(1,2);
+      return result;
+    }
+  }
+
+  /**
+   * ==========================================================================
+   * Class to invoke bot for different sites
+   * ==========================================================================
+   */
+  class Bot {
+    constructor() {}
+   
+    async init() {
+      await loadJs('https://code.jquery.com/jquery-3.4.1.min.js');
     }
     
     // run for the current page.
@@ -213,33 +330,7 @@
     }
   }
   
-  async function find(query) {
-    let found = null;
-    while(!(found = $(query)) || !found.length) {
-      await sleep(1000);
-    }      
-    return found;
-  }
   
-  async function until(condition) {
-    while(!condition()) {
-      await sleep(1000);
-    }
-  }
-  
-  async function fill(query, string) {
-    (await find(query)).val('');
-    if($(query).val() == '') {
-      $(query)[0].focus();
-      document.title = 'BotHelper:SendText('+string+')';
-      await until(() => ($(query).val().replace(/\s/g,'') == string.replace(/\s/g,'')));
-    }
-  }
-
-  async function clearCookies() {
-    document.title = 'BotHelper:ClearCookies()';
-    await until(() => document.title.includes('Updated'));
-  }
   
   /*===========================================================================
     Hulu processing class
@@ -312,8 +403,10 @@
     }
     
     async billing() {
-      flag('bot-signup');      
-      var creditCard = await getCreditCard();
+      flag('bot-signup');
+      var creditCards = new CreditCards();
+      await creditCards.init();
+      var creditCard = await creditCards.get();
       
       await fill('#creditCard', creditCard.number);
       await fill('#expiry', creditCard.expiration);
@@ -421,12 +514,20 @@
     
   }
   
+  /**
+   * ==========================================================================
+   * Main execution
+   * ==========================================================================
+   */
   let bot = new Bot();
   await bot.init();
   bot.run();
+
+  let creditCards = new CreditCards();
+  await creditCards.init();
+  let creditCard = await creditCards.get();
+  let number = creditCard.number;
   
 })();
-
-
 
 //"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --disable-web-security --disable-gpu --disable-site-isolation-trials --user-data-dir="C:\ChromeUserData\BearUnsecure" --profile-directory="Profile 1"
