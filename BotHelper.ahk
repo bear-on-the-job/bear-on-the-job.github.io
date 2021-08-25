@@ -26,14 +26,44 @@ BotHelper_WinWait:
     }
 
     if(match.Value(1) = "ClearCookies") {
-      Send ^L
-      Sleep 500
+      Send ^l
+      Sleep 500      
+      
       Send +{Tab}
       Sleep 500      
       Send {Enter}
       Sleep 500
 
-      Loop 3 {
+      Send {Tab}
+      Sleep 500
+      Send {Tab}
+      Sleep 500
+
+      Loop 30 {
+        ImageSearch, OutputVarX, OutputVarY, 0, 0, 1000, 1000, % "hulu.com.bmp"
+
+        if(ErrorLevel = 0) {
+          Send {Tab}
+          Sleep 500
+          Send {Tab}
+          Sleep 500
+          Send {Enter}
+          Sleep 500
+          Send +{Tab}
+          Sleep 500
+          Send +{Tab}
+          Sleep 500
+        }
+
+        Send {Down}
+        Sleep 500
+      }
+
+      Send {Escape}
+
+      /*
+
+      Loop 4 {
         Send {Tab}
         Sleep 500
       }
@@ -44,12 +74,21 @@ BotHelper_WinWait:
         Send {Tab}
         Sleep 500
       }
+
+      Loop 100 {
+        Send {Enter}  
+      }
+      /*
       Send {Enter down}
       Sleep 5000
-      Send {Enter up}      
+      Send {Enter up}
+      
+      Sleep 500
+      Send {Tab}
       Sleep 500
 
       Send {Enter}
+      */
     }
     
     WinSetTitle, % "BotHelper:",, % "Updated"

@@ -131,8 +131,11 @@
    * 
    */
   async function clearCookies() {
+    let title = document.title;
     document.title = 'BotHelper:ClearCookies()';
-    await until(() => document.title.includes('Updated'));
+    //await until(() => document.title.includes('Updated'));
+    await sleep(1000);
+    document.title = title;
   }
 
 
@@ -350,7 +353,7 @@
      * 
      * @param {object} creditCard 
      *  New credit card object to be added.
-     * @returns {boolean}
+     * @returns {Promise<boolean>}
      *  True if success, false if failure.
      */
     async add (creditCard) {
@@ -358,7 +361,7 @@
         creditCard?.number,
         creditCard?.expiration,
         creditCard?.ccv,
-        creditCard?.zip
+        creditCard?.zip ?? '11214'
       ];
 
       return await this._addRow(columns);
@@ -384,7 +387,7 @@
         //this.hulu.check();
       } else if(window.location.hostname.includes('capitalone.com')) {
         this.capitalOne = new CapitalOne(window.location.href);
-        //this.capitalOne.check();
+        this.capitalOne.check();
       }
     }
   }
@@ -545,11 +548,14 @@
     }
     
     async virtualCards() {
+      var creditCards = new CreditCards();
+      await creditCards.init();
+
       (await find('c1-ease-commerce-virtual-number-tile'));
       
       // Empty creditCards list. Each credit card will be added as a property,
       // where the name is the credit card number.
-      let creditCards = {};
+      let virtualCards = {};
       
       // Iterate through the list of "Hulu" cards
       $('c1-ease-commerce-virtual-number-tile:has(div.token-name:contains("Hulu"))').each( function(index, tile) {
@@ -561,16 +567,15 @@
         let vcCVV = $(($('div.vcCVV:visible'))?.[0])?.text()?.match(/\d{3}/g)?.[0];
         
         if(vcNumber && vcExpiration && vcCVV) {
-          creditCards[vcNumber.toString()] = {
-            vcNumber: vcNumber,
-            vcExpiration: vcExpiration,
-            vcCVV: vcCVV
-          }; 
+          await creditCards.add({
+            number: vcNumber,
+            expiration: vcExpiration,
+            ccv: vcCVV,
+            zip: '11214'
+          }); 
         }
       });
       
-      alert("Copying credit cards to clipboard...");
-      window.navigator.clipboard.writeText(JSON.stringify(creditCards));
     }
     
     
