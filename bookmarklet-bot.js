@@ -308,8 +308,8 @@
      *  Credit card object including number, expiry, CCV
      */
     async get () {
-      var result = (await _loadCreditCards())?.[0];
-      await _deleteRows(1,2);
+      var result = (this._loadCreditCards())?.[0];
+      this._deleteRows(1,2);
       return result;
     }
   }
