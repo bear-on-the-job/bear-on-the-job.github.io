@@ -172,7 +172,7 @@
               sheetId: 0,
               dimension: "ROWS",
               startIndex: 1,
-              endIndex: 1
+              endIndex: 2
             }
           }
         }
