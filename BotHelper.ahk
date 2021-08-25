@@ -26,37 +26,47 @@ BotHelper_WinWait:
     }
 
     if(match.Value(1) = "ClearCookies") {
+      delay := 100
       Send ^l
-      Sleep 500      
+      Sleep % delay      
       
       Send +{Tab}
-      Sleep 500      
+      Sleep % delay      
       Send {Enter}
-      Sleep 500
+      Sleep % delay
+
+      Loop 3 {
+        Send {Tab}
+        Sleep % delay
+      }
+      Send {Enter}
+      Sleep % delay
 
       Send {Tab}
-      Sleep 500
+      Sleep % delay
       Send {Tab}
-      Sleep 500
+      Sleep % delay
 
       Loop 30 {
-        ImageSearch, OutputVarX, OutputVarY, 0, 0, 1000, 1000, % "hulu.com.bmp"
+        ImageSearch, OutputVarX, OutputVarY, 0, 0, 1000, 1000, *150 hulu.com.1.bmp
+
+        ;msgbox % ErrorLevel
 
         if(ErrorLevel = 0) {
           Send {Tab}
-          Sleep 500
+          Sleep % delay
           Send {Tab}
-          Sleep 500
+          Sleep % delay
           Send {Enter}
-          Sleep 500
+          Sleep % delay
           Send +{Tab}
-          Sleep 500
+          Sleep % delay
           Send +{Tab}
-          Sleep 500
-        }
-
-        Send {Down}
-        Sleep 500
+          Sleep % delay
+        } else {
+          Send {Down}
+          Sleep % delay
+        }        
       }
 
       Send {Escape}

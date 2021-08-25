@@ -366,6 +366,16 @@
 
       return await this._addRow(columns);
     }
+
+    /**
+     * Deletes the whole sheet
+     * 
+     * @returns {Promise<boolean>}
+     *  True if success, false if failure.
+     */
+    async clear () {
+      return await this._deleteRows(1);
+    }
   }
 
   /**
@@ -578,8 +588,6 @@
       
     }
     
-    
-    
     /*
     $('c1-ease-commerce-virtual-number-tile:has(div.token-name:contains("Hulu"))')[2].length
       $('c1-ease-commerce-virtual-number-tile:has(div.token-name:contains("Hulu"))')[2].click()
@@ -599,7 +607,6 @@
       $('button.vc-delete-button').click()
       $('button.deleteButton:contains("Delete")').click()
       $('.c1-ease-dialog-close-button').click()
-
     */
     
   }
@@ -613,14 +620,13 @@
   await bot.init();
   bot.run();
 
+  /*
   let creditCards = new CreditCards();
   await creditCards.init();
   let creditCard = await creditCards.get();
   let success = await creditCards.add(creditCard);
-
-  await clearCookies();
-
   success = !success;
+  */
   
 })();
 
