@@ -169,6 +169,8 @@
     async init () {
       await loadJs('https://apis.google.com/js/api.js');
 
+      const GOOGLE_SHEETS = this.GOOGLE_SHEETS;
+
       const signinStatus = async function (isSignedIn) { 
         if(!isSignedIn){
           gapi.auth2.getAuthInstance().signIn();
@@ -204,6 +206,8 @@
      * @returns {Array} credit cards
      */
     _loadCreditCards () {
+      const GOOGLE_SHEETS = this.GOOGLE_SHEETS;
+
       return new Promise(resolve => {
         gapi.client.sheets.spreadsheets.values.get({
           spreadsheetId: GOOGLE_SHEETS.SHEET_ID,
@@ -236,6 +240,8 @@
      *  True for success, false for failure.
      */
     _clearRows (range) {
+      const GOOGLE_SHEETS = this.GOOGLE_SHEETS;
+
       return new Promise(resolve => {
         // Works to clear the cells, but not delete them...
         gapi.client.sheets.spreadsheets.values.clear({
@@ -264,8 +270,10 @@
      *  True for success, false for failure.
      */
     _deleteRows (start, end) {
+      const GOOGLE_SHEETS = this.GOOGLE_SHEETS;
+
       // build request based on start an end. 
-      var requests = [
+      const requests = [
         {
           deleteDimension: {
             range: {
