@@ -560,12 +560,9 @@
     async virtualCards() {
       var creditCards = new CreditCards();
       await creditCards.init();
+      await creditCards.clear();
 
       (await find('c1-ease-commerce-virtual-number-tile'));
-      
-      // Empty creditCards list. Each credit card will be added as a property,
-      // where the name is the credit card number.
-      let virtualCards = {};
       
       // Iterate through the list of "Hulu" cards
       $('c1-ease-commerce-virtual-number-tile:has(div.token-name:contains("Hulu"))').each(async function(index, tile) {
@@ -620,10 +617,11 @@
   await bot.init();
   bot.run();
   
+  /*
   let creditCards = new CreditCards();
   await creditCards.init();
   await creditCards.clear();
-  /*
+  
   let creditCard = await creditCards.get();
   let success = await creditCards.add(creditCard);
   success = !success;
