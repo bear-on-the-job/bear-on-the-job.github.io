@@ -558,7 +558,7 @@
       let virtualCards = {};
       
       // Iterate through the list of "Hulu" cards
-      $('c1-ease-commerce-virtual-number-tile:has(div.token-name:contains("Hulu"))').each( function(index, tile) {
+      $('c1-ease-commerce-virtual-number-tile:has(div.token-name:contains("Hulu"))').each(async function(index, tile) {
         $(tile).click();
         ($('div.vcView:visible')).click();
         
