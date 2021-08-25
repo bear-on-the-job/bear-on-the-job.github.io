@@ -203,7 +203,8 @@
     /**
      * Loads all credit cards from google sheet
      * 
-     * @returns {Array} credit cards
+     * @returns {Promise<Array<object>}
+     *  Array of credit cards
      */
     _loadCreditCards () {
       const GOOGLE_SHEETS = this.GOOGLE_SHEETS;
@@ -236,7 +237,7 @@
      * 
      * @param {string} range 
      *  Spreadsheet notation for the cells to be updated.
-     * @returns {boolean}
+     * @returns {Promise<boolean>}
      *  True for success, false for failure.
      */
     _clearRows (range) {
@@ -266,7 +267,7 @@
      *  Starting row to delete.
      * @param {number} end 
      *  Row following the last row to delete.
-     * @returns {boolean}
+     * @returns {Promise<boolean>}
      *  True for success, false for failure.
      */
     _deleteRows (start, end) {
@@ -308,8 +309,8 @@
      *  Credit card object including number, expiry, CCV
      */
     async get () {
-      var result = (this._loadCreditCards())?.[0];
-      this._deleteRows(1,2);
+      var result = (await this._loadCreditCards())?.[0];
+      await this._deleteRows(1,2);
       return result;
     }
   }
