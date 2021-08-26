@@ -33,6 +33,11 @@ module.exports = {
     };    
   },
 
+  /**
+   * 
+   * @param {JSON} requestParams 
+   * @returns {Promise<JSON>}
+   */
   request: function (requestParams) { 
     return new Promise((resolve, reject) => {
       const api = this.api;
@@ -104,82 +109,70 @@ module.exports = {
     }
   )},
 
+  /**
+   * 
+   * @returns {Promise<JSON>}
+   */
   accounts: function () {
-    let requestParams = {
+    return module.exports.request({
       method: 'GET',
       path: '/accounts/'
-    };
-
-    return module.exports.request(requestParams);
+    });
   },
 
   fills: function (productId) {
-    let requestParams = {
+    return module.exports.request({
       method: 'GET',
       path: '/fills/',
       body: {
         product_id: productId
       }
-    };
-
-    return module.exports.request(requestParams);
+    });
   },
 
   paymentMethods: function () {
-    let requestParams = {
+    return module.exports.request({
       method: 'GET',
       path: '/payment-methods/'
-    };
-
-    return module.exports.request(requestParams);
+    });
   },
 
-  placeOrder: function (params) {    
-    let requestParams = {
+  placeOrder: function (params) {
+    return module.exports.request({
       method: 'POST',
       path: '/orders/',
       body: params
-    };
-
-    return module.exports.request(requestParams);
+    });
   },
 
-  cancelOrder: function (params) {    
-    let requestParams = {
+  cancelOrder: function (params) {
+    return module.exports.request({
       method: 'DELETE',
       path: `/orders/${params.clientOid ? `client:${params.clientOid}` : params.id}/`
-    };
-
-    return module.exports.request(requestParams);
+    });
   },
 
-  cancelOrders: function (productId) {    
-    let requestParams = {
+  cancelOrders: function (productId) {
+    return module.exports.request({
       method: 'DELETE',
       path: `/orders/`,
       body: productId
-    };
-
-    return module.exports.request(requestParams);
+    });
   },
 
   getOrder: function (params) {
-    let requestParams = {
+    return module.exports.request({
       method: 'GET',
       path: `/orders/${params.clientOid ? `client:${params.clientOid}` : params.id}/`
-    };
-
-    return module.exports.request(requestParams);
+    });
   },
 
-  listOrders: function (params) {    
-    let requestParams = {
+  listOrders: function (params) {
+    return module.exports.request({
       method: 'GET',
       path: '/orders/',
       body: params
-    };
-
-    return module.exports.request(requestParams);
+    });
   },
 
   deposits: {

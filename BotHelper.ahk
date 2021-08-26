@@ -5,7 +5,7 @@ SetTitleMatchMode 1 ; WinTitle starts with...
   ; 2 ; WinTitle contains...	
   ; 3 ; WinTitle exact...	
 
-SetTimer, BotHelper_WinWait, 10
+SetTimer, BotHelper_WinWait, -10
 
 ;--------------------------------------------------------------------------
 ; Wait until window is open, then perform action
@@ -114,7 +114,7 @@ BotHelper_WinWait:
     
     WinSetTitle, % "BotHelper:",, % "Updated"
 
-		SetTimer, BotHelper_WinWait, 1000
+		SetTimer, BotHelper_WinWait, -1000
 	}
 	
 	return
