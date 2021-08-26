@@ -124,8 +124,8 @@
       $(query)[0].focus();
       let title = document.title;
       document.title = 'BotHelper:SendText('+string+')';
-      await sleep(500);
-      document.title = title;
+      //await sleep(500);
+      //document.title = title;
       await until(() => ($(query).val().replace(/\s/g,'') == string.replace(/\s/g,'')));
     }
   }

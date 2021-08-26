@@ -42,13 +42,25 @@ BotHelper_WinWait:
       Send {Enter}
       Sleep % delay * 3
 
+      Loop 4 {
+        Send {Tab}
+        Sleep % delay
+      }
+
+      Send {Enter down}
+      Sleep 5000
+      Send {Enter up}
+      Send {Escape}
+
+      /*
       Send {Tab}
       Sleep % delay
       Send {Tab}
       Sleep % delay
 
+      
       Loop 30 {
-        ImageSearch, OutputVarX, OutputVarY, 0, 0, 1000, 1000, *150 hulu.com.1.bmp
+        ImageSearch, OutputVarX, OutputVarY, 0, 0, 1000, 1000, *110 hulu.com.1.bmp
 
         ;msgbox % ErrorLevel
 
@@ -68,11 +80,10 @@ BotHelper_WinWait:
           Sleep % delay
         }        
       }
-
       Send {Escape}
+      */
 
       /*
-
       Loop 4 {
         Send {Tab}
         Sleep 500
