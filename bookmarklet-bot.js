@@ -528,7 +528,7 @@
     async accountClear() {
       //deleteCookies();
       await clearCookies();
-      window.location.href = "https://auth.hulu.com"
+      //window.location.href = "https://auth.hulu.com"
     }
     
     /**
@@ -537,7 +537,7 @@
     async authClear() {
       //deleteCookies();
       await clearCookies();
-      window.location.href = "https://signup.hulu.com"
+      //window.location.href = "https://signup.hulu.com"
     }
   }
   
