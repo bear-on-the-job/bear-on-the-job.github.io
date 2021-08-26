@@ -122,10 +122,9 @@
     (await find(query)).val('');
     if($(query).val() == '') {
       $(query)[0].focus();
-      await sleep(1000);
       document.title = 'BotHelper:SendText('+string+')';
+      await sleep(500);
       await until(() => ($(query).val().replace(/\s/g,'') == string.replace(/\s/g,'')));
-      await sleep(1000);
     }
   }
 

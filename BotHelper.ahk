@@ -103,7 +103,7 @@ BotHelper_WinWait:
     
     WinSetTitle, % "BotHelper:",, % "Updated"
 
-		SetTimer, BotHelper_WinWait, 10
+		SetTimer, BotHelper_WinWait, 1000
 	}
 	
 	return
