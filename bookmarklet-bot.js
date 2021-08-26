@@ -566,15 +566,18 @@
       
       // Iterate through the list of "Hulu" cards
       //$('c1-ease-commerce-virtual-number-tile:has(div.token-name:contains("Hulu"))').each(async function(index, tile) {
-        
+
       for(const tile of $('c1-ease-commerce-virtual-number-tile:has(div.token-name:contains("Hulu"))')) {
         (await find(tile)).click();
         (await find('div.vcView:visible')).click();
 
         let vcCVV = null;
+        let vcNumber = null;
+        let vcExpiration = null;
+
         await until(() => vcCVV = $(($('div.vcCVV:visible'))?.[0])?.text()?.match(/\d{3}/g)?.[0]);
-        let vcNumber = $(($('div.vcNumber:visible'))?.[0])?.text()?.replace(/\s/g,'');
-        let vcExpiration = $(($('div.vcExpiration:visible'))?.[0])?.text()?.match(/[0-9]*\/[0-9]*/g)?.[0];
+        await until(() => vcNumber = $(($('div.vcNumber:visible'))?.[0])?.text()?.replace(/\s/g,''));
+        await until(() => vcExpiration = $(($('div.vcExpiration:visible'))?.[0])?.text()?.match(/[0-9]*\/[0-9]*/g)?.[0]);
         
         if(vcNumber && vcExpiration && vcCVV) {
           await creditCards.add({
@@ -584,8 +587,9 @@
             zip: '11214'
           }); 
         }
-      }
-      
+
+        (await find('.c1-ease-dialog-close-button')).click();
+      }      
     }
     
     /*
