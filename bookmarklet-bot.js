@@ -394,7 +394,7 @@
     run() {
       if(window.location.hostname.includes('hulu.com')) {
         this.hulu = new Hulu(window.location.href);
-        //this.hulu.check();
+        this.hulu.check();
       } else if(window.location.hostname.includes('capitalone.com')) {
         this.capitalOne = new CapitalOne(window.location.href);
         this.capitalOne.check();
