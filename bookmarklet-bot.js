@@ -565,15 +565,16 @@
       (await find('c1-ease-commerce-virtual-number-tile'));
       
       // Iterate through the list of "Hulu" cards
-      $('c1-ease-commerce-virtual-number-tile:has(div.token-name:contains("Hulu"))').each(async function(index, tile) {
-        $(tile).click();
-        ($('div.vcView:visible')).click();
+      //$('c1-ease-commerce-virtual-number-tile:has(div.token-name:contains("Hulu"))').each(async function(index, tile) {
         
+      for(const tile of $('c1-ease-commerce-virtual-number-tile:has(div.token-name:contains("Hulu"))')) {
+        (await find(tile)).click();
+        (await find('div.vcView:visible')).click();
+
+        let vcCVV = null;
+        await until(() => vcCVV = $(($('div.vcCVV:visible'))?.[0])?.text()?.match(/\d{3}/g)?.[0]);
         let vcNumber = $(($('div.vcNumber:visible'))?.[0])?.text()?.replace(/\s/g,'');
         let vcExpiration = $(($('div.vcExpiration:visible'))?.[0])?.text()?.match(/[0-9]*\/[0-9]*/g)?.[0];
-        let vcCVV = null;
-
-        await until(() => {vcCVV = $(($('div.vcCVV:visible'))?.[0])?.text()?.match(/\d{3}/g)?.[0]});
         
         if(vcNumber && vcExpiration && vcCVV) {
           await creditCards.add({
@@ -583,7 +584,7 @@
             zip: '11214'
           }); 
         }
-      });
+      }
       
     }
     
