@@ -501,7 +501,7 @@
       
       await fill('#creditCard', creditCard.number);
       await fill('#expiry', creditCard.expiration);
-      await fill('#cvc', creditCard.cvc);
+      await fill('#cvc', creditCard.ccv);
       await fill('#zip', creditCard.zip);
       
       (await find('button[type="submit"]:contains("SUBMIT")')).click();
