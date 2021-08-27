@@ -11,6 +11,13 @@ module.exports = {
       secret: secret
     };
 
+    /**
+     * 
+     * @param {string} productId 
+     *  Textual product ID (ex: 'BTC-USD')
+     * @returns {Promise<JSON>} 
+     *  JSON object from the query response (https://docs.pro.coinbase.com/#get-products)
+     */
     this.products = function (productId) {
       return module.exports.request({
         method: 'GET',
