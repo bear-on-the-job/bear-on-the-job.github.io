@@ -47,12 +47,15 @@ module.exports = async function (context, req) {
             }            
           }
 
-          for(const {product, weight} of orders.products) {
-            let current = fills[product];
+          for(const {product, weight} of orders.products) {            
             // Get all coinbase fills for this product
             (await coinbase.fills(product))?.forEach(fill => {
               (fills[fill.product_id] || (fills[fill.product_id] = [])).push(fill);
             });
+            await sleep(1000);
+
+            let current = fills[product];
+
             // Get current coinbase product info
             current.product = (await coinbase.products(product));
             current.stats = (await coinbase.products.stats(product));            
@@ -60,11 +63,13 @@ module.exports = async function (context, req) {
             // Calculate total amount bought
             current.totalAmount = current
               ?.filter((fill) => /buy/i.test(fill.side))
-              ?.reduce((total, fill) => total + (fill.size));
+              ?.reduce((total, fill) => {
+                return Number(total) + Number(fill.size);
+              }, 0);
             // Calculate total cost for this product
             current.totalCost = current
               ?.filter((fill) => /buy/i.test(fill.side))
-              ?.reduce((total, fill) => total + (fill.price * fill.size));
+              ?.reduce((total, fill) => Number(total) + (Number(fill.price) * Number(fill.size)), 0);
             // Calculate average price per unit of this product
             current.averageCost = current.totalCost / current.totalAmount;
             
@@ -76,7 +81,7 @@ module.exports = async function (context, req) {
               ?.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))
               ?.[0];
             // Calculate the time since the last purchase
-            current.elapsed = Math.max(maxDays, Math.abs(new Date() - new Date(current.latest)) / (1000 * 60 * 60 * 24));
+            current.elapsed = Math.min(maxDays, Math.abs(new Date() - new Date(current.latest?.created_at)) / (1000 * 60 * 60 * 24));
             fills.totalWeight += current.adjustedWeight;
           }
 
@@ -91,7 +96,7 @@ module.exports = async function (context, req) {
               continue;
             }
 
-            current.adjustedPrice = roundToMinUnit((current.stats?.last + (current.product?.quote_increment * 10)), current.product?.quote_increment);            
+            current.adjustedPrice = roundToMinUnit((Number(current.stats?.last) + (Number(current.product?.quote_increment) * 10)), Number(current.product?.quote_increment));
             fills.amountToDeposit += current.spendRatio;
           }
 
@@ -182,59 +187,3 @@ module.exports = async function (context, req) {
     };
   }
 };
-
-
-()=>{
-  fetch('http://localhost:7071/api/daily-buy', {
-    method: 'POST',
-    body: JSON.stringify({
-      secret: 'pHZAmROTDAYMHAk4BFOzxGTgDGhU1rw1+YojWdES+H5HZg5caP1Aumnx11wvtHwZT4mcAysb4Z0Opecy0pC3Mg==',
-      key: 'a88bee5c08810ddd74d9e43275887fa9',
-      pass: 'j9vx8spq6uq',
-      google: {
-        sheets: {
-          key: '1zaTe6roOJZB5zKxSdQJB6vbss7UsCVD_JXAJRYgnM1M',
-          names: [
-            'AnchorUSD',
-            'Venmo'
-          ]
-        }        
-      },
-      orders: {
-        depositSource: "Evansville",
-        dailyUsd: 20.00,
-        products: [
-          {
-            product: "BTC-USD",
-            weight: 2
-          },
-          {
-            product: "ETH-USD",
-            weight: 2
-          },
-          {
-            product: "DOT-USD",
-            weight: 1
-          },
-          {
-            product: "ADA-USD",
-            weight: 1
-          },
-          {
-            product: "ALGO-USD",
-            weight: 1
-          },
-          {
-            product: "LTC-USD",
-            weight: 1
-          }
-        ]
-      }
-    }),
-    headers: {
-      'Content-type': 'application/json; charset=UTF-8'
-    }
-  })
-  .then(res => res.json())
-  .then(console.log)
-}

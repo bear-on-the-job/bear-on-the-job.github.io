@@ -12,11 +12,12 @@ module.exports = {
     };
 
     /**
+     * (https://docs.pro.coinbase.com/#get-products)
      * 
      * @param {string} productId 
      *  Textual product ID (ex: 'BTC-USD')
      * @returns {Promise<JSON>} 
-     *  JSON object from the query response (https://docs.pro.coinbase.com/#get-products)
+     *  JSON object from the query response 
      */
     this.products = function (productId) {
       return module.exports.request({
@@ -25,6 +26,14 @@ module.exports = {
       });
     };
 
+    /**
+     * (https://docs.pro.coinbase.com/#get-24hr-stats)
+     * 
+     * @param {string} productId 
+     *  Textual product ID (ex: 'BTC-USD')
+     * @returns {Promise<JSON>} 
+     *  JSON object from the query response 
+     */
     this.products.stats = function (productId) {
       return module.exports.request({
         method: 'GET',
@@ -32,6 +41,14 @@ module.exports = {
       });
     };
 
+    /**
+     * (https://docs.pro.coinbase.com/#get-product-ticker)
+     * 
+     * @param {string} productId 
+     *  Textual product ID (ex: 'BTC-USD')
+     * @returns {Promise<JSON>} 
+     *  JSON object from the query response 
+     */
     this.products.ticker = function (productId) {
       return module.exports.request({
         method: 'GET',
