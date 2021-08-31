@@ -67,8 +67,10 @@ module.exports = {
       const api = this.api;
       const timestamp = Date.now() / 1000;
 
+      requestParams.attempt = requestParams.attempt || 1;
+
       // If it is GET request, convert body to query params
-      if(requestParams.method == 'GET' && typeof requestParams.body === 'object'){
+      if(requestParams.method == 'GET' && requestParams.body && typeof requestParams.body === 'object'){
         // Set initial separator to query indicator '?'
         let separator = '?';
         // Iterate all keys in the body object
@@ -82,8 +84,7 @@ module.exports = {
         requestParams.body = null;
       }
 
-      // Make the request
-      const request = https.request({
+      const options = {
         hostname: api.hostname,
         method: requestParams.method,
         path: requestParams.path,
@@ -100,10 +101,19 @@ module.exports = {
             requestParams.body
           ),
         }
-      }, (response) => {
+      };
+
+      if(/post/i.test(requestParams.method) && requestParams.body) {
+        requestParams.data = JSON.stringify(requestParams.body);
+        options.headers['Content-Length'] = requestParams.data.length;
+        options.headers['Content-Type'] = 'application/json';
+      }
+
+      // Make the request
+      const request = https.request(options, (response) => {
         let data = '';
 
-        // A chunk of data has been received.
+        // A chunk of data has been received. 
         response.on('data', (chunk) => {
           data += chunk;
         });
@@ -126,12 +136,33 @@ module.exports = {
       });
 
       request.on('error', (error) => {
-        reject(error);
+        if(requestParams.attempt < 4){
+          requestParams.attempt++;
+          resolve(null);
+        } else {
+          reject({
+            error: error,
+            requestParams: requestParams
+          });
+        }
       });
       
+      if(requestParams.data) {
+        request.write(requestParams.data);
+      }
+
       request.end();
-    }
-  )},
+    })
+    .then((resolved) =>{
+      if(resolved){
+        // Success, return whatever was processed
+        return resolved;
+      } else {
+        // Retry...
+        return module.exports.request(requestParams);
+      }
+    });
+  },
 
   /**
    * 
