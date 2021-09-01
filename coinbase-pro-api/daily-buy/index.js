@@ -1,9 +1,6 @@
-const coinbase = require('../coinbase');
-const googleSheets = require('../../google-sheets');
-
 const API = {
   coinbase: require('../coinbase'),
-  google: require('../../google-sheets')
+  google: require('../google')
 };
 
 module.exports = async function (context, req) {  
@@ -130,7 +127,7 @@ module.exports = async function (context, req) {
 
   try {
     // Check all required params are available
-    if (coinbase.key && coinbase.pass && coinbase.secret) {
+    if (coinbase?.key && coinbase?.pass && coinbase?.secret) {
       // Everything is at least available, attempt the workflow.
       API.coinbase.init(coinbase.key, coinbase.pass, coinbase.secret);
 
@@ -338,9 +335,9 @@ module.exports = async function (context, req) {
         type: LOG_TYPE.ERROR,
         message: `Missing required params for authorization`,
         data: {
-          key: !!key,
-          pass: !!pass,
-          secret: !!secret
+          key: !!coinbase?.key,
+          pass: !!coinbase?.pass,
+          secret: !!coinbase?.secret
         }
       });
     }
