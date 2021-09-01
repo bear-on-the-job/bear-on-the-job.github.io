@@ -1,45 +1,73 @@
 const coinbase = require('../coinbase');
 const googleSheets = require('../../google-sheets');
 
-module.exports = async function (context, req) {
-  const LOG_TYPE = {
-    INFO: "INFO",
-    ERROR: "ERROR"
-  };
+const API = {
+  coinbase: require('../coinbase'),
+  google: require('../../google-sheets')
+};
 
+module.exports = async function (context, req) {  
+  const DEFAULT = {
+    DEPOSIT: {
+      SOURCE: null,
+      AMOUNT: 0,
+      CURRENCY: 'USD'
+    },
+    WEIGHTING: {
+      MAX_DAYS: 7,
+      EXPONENT: 1
+    }
+  }
+
+  /**
+   * Const enum for supported currencies, to map 3-letter notation to 
+   * prefix symbol, for more descriptive log messages.
+   */
   const currencyPrefix = {
     'USD': '$',
     'GBP': ''
   };
+
+  /**
+   * Const enum for logging message types
+   */
+   const LOG_TYPE = {
+    INFO: "INFO",
+    ERROR: "ERROR"
+  };
+  /**
+   * Logging class to simplify collection of log messages that will be 
+   * reported when the request completes.
+   */
   class Logger {
     constructor() {}
 
     content = [];
 
+    /**
+     * Logging function to add an entry with message and data to the log.
+     * 
+     * @param {object} entry 
+     *  Object containing a type, message, and optional data object
+     */
     log(entry) {
       this.content.push({
-        logType: entry?.type,
+        logType: entry?.type || LOG_TYPE.INFO,
         message: entry?.message,
         data: entry?.data
       });
     }
 
+    /**
+     * Accessor to get the content array containing log entries.
+     * 
+     * @returns {Array}
+     *  Array containing all the log entries so far.
+     */
     get() {
       return this.content;
     }
   };
-
-
-  // Get params from the request    
-  const key = ((req.body && req.body.key) || (req.query.key && decodeURIComponent(req.query.key)));
-  const pass = ((req.body && req.body.pass) || (req.query.pass && decodeURIComponent(req.query.pass)));
-  const secret = ((req.body && req.body.secret) || (req.query.secret && decodeURIComponent(req.query.secret)));
-  const orders = ((req.body && req.body.orders) || (req.query.orders && decodeURIComponent(req.query.orders)));
-  const google = ((req.body && req.body.google) || (req.query.google && JSON.parse(decodeURIComponent(req.query.google))));
-
-  const maxDays = 5;
-  const weightExponent = 1.5;
-  const logger = new Logger();
 
   /**
    * Helper function to emulate sleep() functions in other languages. When 
@@ -50,7 +78,7 @@ module.exports = async function (context, req) {
    * @returns {Promise}
    *  Returns with no execution when time elapses.
    */
-  function sleep(ms) {
+   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
@@ -71,8 +99,16 @@ module.exports = async function (context, req) {
     return parseFloat(parseFloat(value).toFixed(inverseLog));
   }
 
-
-  function checkResponse(response, attempt) {
+  /**
+   * 
+   * @param {object} response 
+   *  The response object to check
+   * @param {string} attempt 
+   *  An optional string to include in a log message if the response is empty
+   * @returns {boolean}
+   *  True if the response is valid, false if there was an error.
+   */
+  function coinbaseResponse(response, attempt) {
     if (!response || response.error) {
       logger.log({
         type: LOG_TYPE.ERROR,
@@ -85,11 +121,18 @@ module.exports = async function (context, req) {
     }
   }
 
+  // Get params from the request
+  const coinbase = ((req.body && req.body.coinbase) || (req.query.coinbase && decodeURIComponent(req.query.coinbase)));
+  const orders = ((req.body && req.body.orders) || (req.query.orders && decodeURIComponent(req.query.orders)));
+  const google = ((req.body && req.body.google) || (req.query.google && JSON.parse(decodeURIComponent(req.query.google))));
+
+  const logger = new Logger();
+
   try {
     // Check all required params are available
-    if (key && pass && secret) {
+    if (coinbase.key && coinbase.pass && coinbase.secret) {
       // Everything is at least available, attempt the workflow.
-      coinbase.init(key, pass, secret);
+      API.coinbase.init(coinbase.key, coinbase.pass, coinbase.secret);
 
       // Initialize the fills object, which will be used to track calculations
       // and amounts for products.
@@ -106,22 +149,22 @@ module.exports = async function (context, req) {
       if (orders) {
         // Check that a funding source and desired daily spend has been 
         // provided.
-        if (orders.deposit?.source && orders.deposit?.daily) {
+        if (orders.deposit?.source && orders.deposit?.amount) {
 
           // Check if google information has been provided, and get all 
           // relevant fills from google sheets. The primary source of 
           // our fills is from Coinbase, but this will provide supplemental
           // information if some currency was purchasd from other sources.
-          if (google && google.sheets && google.sheets.names) {
+          if (google?.sheets?.names && google?.sheets?.key) {
             // Initialize the API
-            googleSheets.init(google.sheets.key);
+            API.google.init(google.sheets.key);
             // Iterate through each named sheet
             for (const name of google.sheets.names) {
               // Iterate the fills from that sheet
-              (await googleSheets.get(name))?.forEach(fill => {
+              (await API.google.get(name))?.forEach(fill => {
                 // Check that the current fill matches a product from the
                 // orders list
-                if (orders.products.find(({ product, weight }) => product == fill.product)) {
+                if (orders.products.find(({product}) => product == fill.product)) {
                   // Add the fill to the full list of fills. Will be combined
                   // with other fill sources later.
                   (fills[fill.product] || (fills[fill.product] = [])).push(fill);
@@ -133,7 +176,7 @@ module.exports = async function (context, req) {
           // Iterate through all products in the order list
           for (const { product, weight } of orders.products) {
             // Get all coinbase fills for this product
-            (await coinbase.fills(product))?.forEach(fill => {
+            (await API.coinbase.fills(product))?.forEach(fill => {
               (fills[fill.product_id] || (fills[fill.product_id] = [])).push(fill);
             });
 
@@ -141,8 +184,8 @@ module.exports = async function (context, req) {
             const current = fills[product];
 
             // Get current coinbase product info
-            current.product = (await coinbase.products(product));
-            current.stats = (await coinbase.products.stats(product));
+            current.product = (await API.coinbase.products(product));
+            current.stats = (await API.coinbase.products.stats(product));
 
             // Calculate total amount bought
             current.totalAmount = current
@@ -158,7 +201,7 @@ module.exports = async function (context, req) {
             current.averageCost = current.totalCost / current.totalAmount;
             // Calculate adjusted weight, based on our average cost compared
             // to the current cost of the product.
-            current.adjustedWeight = weight * Math.pow((current.averageCost / current.stats?.last), weightExponent);
+            current.adjustedWeight = weight * Math.pow((current.averageCost / current.stats?.last), (orders?.weighting?.exponent || DEFAULT.WEIGHTING.EXPONENT));
             // Accumulate to determine total adjusted weights.
             fills.totalWeight += current.adjustedWeight;
 
@@ -168,7 +211,7 @@ module.exports = async function (context, req) {
               ?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
               ?.[0];
             // Calculate the time since the last purchase
-            current.elapsed = Math.min(maxDays, Math.abs(new Date() - new Date(current.latest?.created_at)) / (1000 * 60 * 60 * 24));
+            current.elapsed = Math.min((orders?.weighting?.maxDays || DEFAULT.WEIGHTING.MAX_DAYS), Math.abs(new Date() - new Date(current.latest?.created_at)) / (1000/*ms*/ * 60/*secs*/ * 60/*mins*/ * 24/*hours*/));
           }
 
           // Iterate a second time to determine spend amounts. This needs to 
@@ -180,7 +223,7 @@ module.exports = async function (context, req) {
 
             // Calculate how much to spend on current product, based on time 
             // since last purchase, and the adjusted weight of the product.
-            current.spendRatio = orders.deposit?.daily * current.elapsed * (current.adjustedWeight / fills.totalWeight);
+            current.spendRatio = (orders.deposit?.amount || DEFAULT.DEPOSIT.AMOUNT) * current.elapsed * (current.adjustedWeight / fills.totalWeight);
             // Calculate amount to buy, based on our desired spend amount, and 
             // current price of product.
             current.amountToBuy = round((current.spendRatio / current.stats?.last), current.product?.base_increment);
@@ -215,26 +258,26 @@ module.exports = async function (context, req) {
             // Check that we have a valid amount to deposit.
             if (fills.amountToDeposit && orders.deposit?.currency) {
               // Get a list of payment methods available to Coinbase.
-              response = await coinbase.paymentMethods();
+              response = await API.coinbase.paymentMethods();
 
               // Check the response...
-              if (checkResponse(response, 'coinbase.paymentMethods()')) {
+              if (coinbaseResponse(response, 'coinbase.paymentMethods()')) {
                 // Extract the payment ID and check that it is valid
-                if (fills.paymentId = response.filter(paymentMethod => new RegExp(orders.deposit?.source, 'i').test(paymentMethod.name))?.[0]?.id) {
+                if (fills.paymentId = response.filter(paymentMethod => new RegExp((orders.deposit?.source || DEFAULT.DEPOSIT.SOURCE), 'i').test(paymentMethod.name))?.[0]?.id) {
                   // Attempt to make the deposit...
                   const deposit = {
                     payment_method_id: fills.paymentId,
                     amount: round(fills.amountToDeposit),
-                    currency: orders.deposit?.currency
+                    currency: (orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)
                   };
 
-                  response = (await coinbase.deposits.paymentMethod(deposit));
+                  response = (await API.coinbase.deposits.paymentMethod(deposit));
 
                   // Check the response...
-                  if (checkResponse(response, 'coinbase.deposits.paymentMethod()')) {
+                  if (coinbaseResponse(response, 'coinbase.deposits.paymentMethod()')) {
                     logger.log({
                       type: LOG_TYPE.INFO,
-                      message: `Deposit for ${currencyPrefix[orders.deposit?.currency]}${round(deposit.amount, 0.01)} ${deposit.currency} from ${orders.deposit?.source} successful.`,
+                      message: `Deposit for ${currencyPrefix[(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)]}${round(deposit.amount, 0.01)} ${deposit.currency} from ${(orders.deposit?.source || DEFAULT.DEPOSIT.SOURCE)} successful.`,
                       data: response
                     });
 
@@ -255,14 +298,14 @@ module.exports = async function (context, req) {
                           price: current.adjustedPrice
                         };
 
-                        response = {}; //(await coinbase.placeOrder(order));
+                        response = {}; //(await API.coinbase.placeOrder(order));
 
                         // Check the response...
-                        if (checkResponse(response, `coinbase.placeOrder(${product})`)) {
+                        if (coinbaseResponse(response, `coinbase.placeOrder(${product})`)) {
                           // Success, add the information to the log.
                           logger.log({
                             type: LOG_TYPE.INFO,
-                            message: `Placed ${order.type} ${order.side} order for ${order.size} ${order.product_id} at price ${currencyPrefix[orders.deposit?.currency]}${round(order.price, 0.01)} ${orders.deposit?.currency}.`,
+                            message: `Placed ${order.type} ${order.side} order for ${order.size} ${order.product_id} at price ${currencyPrefix[(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)]}${round(order.price, 0.01)} ${(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)}.`,
                             data: response
                           });
                         }

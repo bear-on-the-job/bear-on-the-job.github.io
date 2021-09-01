@@ -42,14 +42,33 @@ BotHelper_WinWait:
       Send {Enter}
       Sleep % delay * 3
 
+      
       Loop 4 {
         Send {Tab}
         Sleep % delay
       }
 
+      Sleep 500
+
+      /*
       Send {Enter down}
       Sleep 5000
       Send {Enter up}
+      Send {Escape}
+      */
+
+      Loop {
+        ImageSearch, X, Y, 0, 0, 1500, 1000, *50 remove.button.bmp
+
+        if (ErrorLevel = 0) {
+          ;Click %X%, %Y%
+          Send {Enter}
+          Sleep % delay * 5
+        } else {
+          break
+        }
+      }
+
       Send {Escape}
 
       /*
