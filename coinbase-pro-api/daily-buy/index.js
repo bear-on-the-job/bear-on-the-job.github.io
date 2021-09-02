@@ -232,7 +232,10 @@ module.exports = async function (context, req) {
               logger.log({
                 type: LOG_TYPE.ERROR,
                 message: `Purchase amount ${current.amountToBuy} is too small for ${product}. Minimum amount is ${current.product?.base_min_size}`,
-                data: current
+                data: { 
+                  amount: current.amountToBuy,
+                  product: current.product
+                }
               });
               // Reset amount to buy since we don't have enough
               current.amountToBuy = null;
@@ -321,7 +324,10 @@ module.exports = async function (context, req) {
               logger.log({
                 type: LOG_TYPE.ERROR,
                 message: `Invalid amount to deposit: ${fills.amountToDeposit}.`,
-                data: fills
+                data: {
+                  amount: fills.amountToDeposit,
+                  deposit: orders?.deposit
+                }
               });
             }
           }
