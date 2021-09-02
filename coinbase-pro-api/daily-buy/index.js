@@ -127,9 +127,9 @@ module.exports = async function (context, req) {
 
   try {
     // Check all required params are available
-    if (coinbase?.key && coinbase?.pass && coinbase?.secret) {
+    if (coinbase?.key && coinbase?.passphrase && coinbase?.secret) {
       // Everything is at least available, attempt the workflow.
-      API.coinbase.init(coinbase.key, coinbase.pass, coinbase.secret);
+      API.coinbase.init(coinbase.key, coinbase.passphrase, coinbase.secret);
 
       // Initialize the fills object, which will be used to track calculations
       // and amounts for products.
@@ -336,7 +336,7 @@ module.exports = async function (context, req) {
         message: `Missing required params for authorization`,
         data: {
           key: !!coinbase?.key,
-          pass: !!coinbase?.pass,
+          pass: !!coinbase?.passphrase,
           secret: !!coinbase?.secret
         }
       });
