@@ -1,0 +1,37 @@
+{
+  "deposit": {
+    "source": "Evansville",
+    "amount": 1,
+    "currency": "USD"
+  },
+  "weighting": {
+    "exponent": 1.5,
+    "maxDays": 5
+  },
+  "products": [
+    {
+      "product": "BTC-USD",
+      "weight": 2
+    },
+    {
+      "product": "ETH-USD",
+      "weight": 2
+    },
+    {
+      "product": "DOT-USD",
+      "weight": 1
+    },
+    {
+      "product": "ADA-USD",
+      "weight": 1
+    },
+    {
+      "product": "ALGO-USD",
+      "weight": 1
+    },
+    {
+      "product": "LTC-USD",
+      "weight": 1
+    }
+  ]
+}
