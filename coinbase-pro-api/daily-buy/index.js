@@ -281,7 +281,7 @@ module.exports = async function (context, req) {
                       data: response
                     });
 
-                    // Iterate one last time to make the purchases, now that the deposit
+                    // Iterate on last time to make the purchases, now that the deposit
                     // has cleared.
                     for (const { product, weight } of orders.products) {
                       const current = fills[product];
