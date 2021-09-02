@@ -120,8 +120,8 @@ module.exports = async function (context, req) {
 
   // Get params from the request
   const coinbase = ((req.body && req.body.coinbase) || (req.query.coinbase && decodeURIComponent(req.query.coinbase)));
-  const orders = ((req.body && req.body.orders) || (req.query.orders && decodeURIComponent(req.query.orders)));
   const google = ((req.body && req.body.google) || (req.query.google && JSON.parse(decodeURIComponent(req.query.google))));
+  const orders = ((req.body && req.body.orders) || (req.query.orders && decodeURIComponent(req.query.orders)));
 
   const logger = new Logger();
 
