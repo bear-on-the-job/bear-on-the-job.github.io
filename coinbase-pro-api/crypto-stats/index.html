@@ -1,1 +1,130 @@
-Hello
+  
+<html>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.js"></script>
+  <script src="https://unpkg.com/ag-charts-community@4.0.0/dist/ag-charts-community.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-grid.css">
+  <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-theme-alpine.css">
+  <style media="only screen">
+    html, body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        box-sizing: border-box;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    html {
+        position: absolute;
+        top: 0;
+        left: 0;
+        padding: 0;
+        overflow: auto;
+    }
+
+    body {
+        padding: 1rem;
+        overflow: auto;
+    }
+</style>
+  <script>
+    /**
+     * Rounding helper function, using minimum unit allowed. 
+     * 
+     * @param {Number} value 
+     *  Value to be rounded. Automatically converted to float before rounding.
+     * @param {Number} minUnit 
+     *  Minimum unit size for rounding. Defaults to 0.01 to easily round USD
+     *  currency values.
+     * @returns {float}
+     *  Rounded value as a float.
+     */
+    function round(value) {
+      const minUnit = value < 0.1 ? 0.0001 : 0.01;
+      const inverse = 1 / parseFloat(minUnit);
+      const inverseLog = Math.log10(inverse);
+      return parseFloat(parseFloat(value).toFixed(inverseLog));
+    }
+
+    (async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const data = urlParams.get('data');
+
+      let response = await new Promise(resolve => {
+        $.ajax({
+          crossDomain: true,
+          url: "http://localhost:7071/api/crypto-stats",
+          method: "POST",
+          dataType: 'json',
+          data: atob(decodeURIComponent(data || '')),
+          success: (data) => {
+            resolve(data);
+          },
+          error: (error) => {
+            resolve(error);
+          }
+        });
+      });
+
+      $(document).ready(()=>{
+        const gridOptions = {
+          columnDefs: [
+            { field: 'Product' },
+            { field: 'Average Cost' },
+            { field: 'Current Price' },
+            { field: '% Gain' }
+          ],
+          rowData: Object.keys(response.data).map((key, index) => {
+            return {
+              'Product': key,
+              'Average Cost': round(response.data[key]?.averageCost),
+              'Total Cost': round(response.data[key]?.totalCost),              
+              'Current Price': round(response.data[key]?.stats?.last || 0),
+              'Current Value': round((response.data[key]?.stats?.last || 0) * (response.data[key]?.totalAmount || 0)),
+              '% Gain': round((((response.data[key]?.stats?.last || 0) / (response.data[key]?.averageCost || 1)) - 1) * 100),
+            }
+          })
+        };
+
+        const pieOptions = {
+          container: document.querySelector('#chart'),
+          data: gridOptions.rowData,
+          series: [
+            {
+              type: 'pie',
+              title: {
+                text: 'Current Value',
+              },
+              labelKey: 'Product',
+              angleKey: 'Current Value',
+              innerRadiusOffset: -40,
+            },
+            {
+              type: 'pie',
+              title: {
+                text: 'Total Cost',
+              },
+              labelKey: 'Product',
+              angleKey: 'Total Cost',
+              outerRadiusOffset: -100,
+              innerRadiusOffset: -140,
+            },
+          ],
+        };
+
+        // lookup the container we want the Grid to use
+        const grid = document.querySelector('#grid');
+        // create the grid passing in the div to use together with the columns & data we want to use
+        new agGrid.Grid(grid, gridOptions);
+        agCharts.AgChart.create(pieOptions);
+      });
+
+    })();
+    
+  </script>
+  <body style="background-color:#333333; color: #CCCCCC;">
+    <div id="chart" class="ag-theme-alpine" style="height: 500px;"></div>
+    <div id="grid" class="ag-theme-alpine"></div>
+  </body>
+  </html>
+  

@@ -118,6 +118,7 @@ module.exports = async function (context, req) {
     }
   }
 
+
   // Get params from the request
   const coinbase = ((req.body && req.body.coinbase) || (req.query.coinbase && decodeURIComponent(req.query.coinbase)));
   const google = ((req.body && req.body.google) || (req.query.google && JSON.parse(decodeURIComponent(req.query.google))));
@@ -196,9 +197,23 @@ module.exports = async function (context, req) {
               ?.reduce((total, fill) => Number(total) + (Number(fill.price) * Number(fill.size)), 0);
             // Calculate average price per unit of this product
             current.averageCost = current.totalCost / current.totalAmount;
+
             // Calculate adjusted weight, based on our average cost compared
             // to the current cost of the product.
-            current.adjustedWeight = weight * Math.pow((current.averageCost / current.stats?.last), (orders?.weighting?.exponent || DEFAULT.WEIGHTING.EXPONENT));
+            {
+              // Math.pow() doesn't properly handle fractional exponents for
+              // negative values, so use this helper function.
+              const pow = (x, e) => {
+                return x < 0 ? -Math.pow(-x, e) : Math.pow(x, e);
+              }
+
+              // y = (x-1)^e + 1
+              const x = (current.averageCost / (current.stats?.last || current.averageCost));
+              const e = (orders?.weighting?.exponent || DEFAULT.WEIGHTING.EXPONENT);
+              const y = pow((x - 1), e) + 1;
+              current.adjustedWeight = weight * y;
+            }
+
             // Accumulate to determine total adjusted weights.
             fills.totalWeight += current.adjustedWeight;
 

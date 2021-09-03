@@ -123,4 +123,6 @@ module.exports = async function (context, req) {
     log: logger.get(),
     data: info
   };
+
+  context.res.headers = {'Access-Control-Allow-Origin': '*'};
 };

@@ -35,7 +35,7 @@ BotHelper_WinWait:
       Send {Enter}
       Sleep % delay
 
-      Loop 3 {
+      Loop 4 {
         Send {Tab}
         Sleep % delay
       }
