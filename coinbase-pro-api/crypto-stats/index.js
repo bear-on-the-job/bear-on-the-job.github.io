@@ -17,6 +17,7 @@ module.exports = async function (context, req) {
   // Initialize the fills object, which will be used to track calculations
   // and amounts for products.
   let fills = {};
+  let info = {};
 
   try {
     // Check all required params are available
@@ -39,7 +40,7 @@ module.exports = async function (context, req) {
             if (products.find(product => product == fill.product)) {
               // Add the fill to the full list of fills. Will be combined
               // with other fill sources later.
-              (fills[fill.product] || (fills[fill.product] = [])).push(fill);
+              (info[fill.product]?.fills || (info[fill.product] = {fills:[]}).fills).push(fill);
             }
           });
         }
@@ -48,32 +49,38 @@ module.exports = async function (context, req) {
       // Iterate through all products in the order list
       for (const product of products) {
         // Get all coinbase fills for this product
-        (await API.coinbase.fills(product))?.forEach(fill => {
-          (fills[fill.product_id] || (fills[fill.product_id] = [])).push(fill);
-        });
+        let coinbaseFills = (await API.coinbase.fills(product));
+
+        if(Array.isArray(coinbaseFills)){
+          coinbaseFills.forEach(fill => {
+            (info[fill.product_id]?.fills || (info[fill.product_id] = {fills:[]}).fills).push(fill);
+          });
+        }
 
         // Reference to the current product fills.
-        const current = fills[product];
+        const current = info[product];
+
+        if(!current?.fills?.length) continue;
 
         // Get current coinbase product info
         current.product = (await API.coinbase.products(product));
         current.stats = (await API.coinbase.products.stats(product));
 
         // Calculate total amount bought
-        current.totalAmount = current
+        current.totalAmount = current.fills
           ?.filter((fill) => /buy/i.test(fill.side))
           ?.reduce((total, fill) => {
             return Number(total) + Number(fill.size);
           }, 0);
         // Calculate total cost for this product
-        current.totalCost = current
+        current.totalCost = current.fills
           ?.filter((fill) => /buy/i.test(fill.side))
           ?.reduce((total, fill) => Number(total) + (Number(fill.price) * Number(fill.size)), 0);
         // Calculate average price per unit of this product
         current.averageCost = current.totalCost / current.totalAmount;
 
         // Determine the timestamp of the last purchase
-        current.latest = current
+        current.latest = current.fills
           ?.filter(fill => fill.created_at && /buy/i.test(fill.side))
           ?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
           ?.[0];
@@ -86,8 +93,7 @@ module.exports = async function (context, req) {
         current.elapsed.hours = current.elapsed.minutes / 60;
         current.elapsed.days = current.elapsed.hours / 24;
 
-        // Clear the array portion as we don't want to report that
-        current.length = 0;
+        current.fills = null;
       }
 
     } else {
@@ -115,6 +121,6 @@ module.exports = async function (context, req) {
 
   (context.res = context.res || { status: 200 }).body = {
     log: logger.get(),
-    data: fills
+    data: info
   };
 };
