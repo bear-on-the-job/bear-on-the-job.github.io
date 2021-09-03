@@ -5,8 +5,8 @@
     "currency": "USD"
   },
   "weighting": {
-    "exponent": 1.5,
-    "maxDays": 3
+    "exponent": 1.8,
+    "maxDays": 5
   },
   "products": [
     {
@@ -24,6 +24,10 @@
     {
       "product": "ADA-USD",
       "weight": 2
+    },
+    {
+      "product": "SOL-USD",
+      "weight": 1
     },    
     {
       "product": "LTC-USD",
