@@ -43,8 +43,24 @@
       const minUnit = value < 0.1 ? 0.0001 : 0.01;
       const inverse = 1 / parseFloat(minUnit);
       const inverseLog = Math.log10(inverse);
-      return parseFloat(parseFloat(value).toFixed(inverseLog));
+      return parseFloat(value).toFixed(inverseLog);
     }
+
+    const colors = {
+      'DOGE-USD': '#65d196',
+      'ETH-USD': '#0ebdcd',
+      "BTC-USD": '#ffae35',
+      "DOT-USD": '#d90275',
+      "ADA-USD": '#81d1db',
+      "LTC-USD": '#cccccc',
+      "BCH-USD": '#3ca569',
+      "ALGO-USD": '#333333',
+      "MATIC-USD": '#5983ff',
+      "SOL-USD": '#8ffff0',
+      "XLM-USD": '#000000',
+      "TRX-USD": '#e00000',
+      "SIA-USD": '#4be3a6',
+    };
 
     (async () => {
       const urlParams = new URLSearchParams(window.location.search);
@@ -53,7 +69,8 @@
       let response = await new Promise(resolve => {
         $.ajax({
           crossDomain: true,
-          url: "http://localhost:7071/api/crypto-stats",
+          url: 'https://coinbase-pro.azurewebsites.net/api/crypto-stats',
+          //url: "http://localhost:7071/api/crypto-stats",
           method: "POST",
           dataType: 'json',
           data: atob(decodeURIComponent(data || '')),
@@ -84,7 +101,16 @@
               '% Gain': round((((response.data[key]?.stats?.last || 0) / (response.data[key]?.averageCost || 1)) - 1) * 100),
             }
           })
+          .filter(product => product['Current Value'])
+          .sort((a,b) => Number(b['Current Value']) - Number(a['Current Value']))
         };
+
+        colors.fills = gridOptions.rowData.map(({'Product': product}) => {
+          return colors[product];
+        });
+        colors.strokes = gridOptions.rowData.map(({'Total Cost': totalCost, 'Current Value': currentValue}) => {
+          return '#ffffff'; //totalCost > currentValue ? '#ff1111' : '#ffffff';
+        });
 
         const pieOptions = {
           container: document.querySelector('#chart'),
@@ -98,6 +124,16 @@
               labelKey: 'Product',
               angleKey: 'Current Value',
               innerRadiusOffset: -40,
+              label: {
+                enabled: false
+              },
+              highlightStyle: {
+                fill: '#dddddd'
+              },
+              fills: colors.fills,
+              strokes: colors.strokes,
+              strokeWidth: 3,
+              showInLegend: false
             },
             {
               type: 'pie',
@@ -108,6 +144,16 @@
               angleKey: 'Total Cost',
               outerRadiusOffset: -100,
               innerRadiusOffset: -140,
+              label: {
+                enabled: false
+              },
+              highlightStyle: {
+                fill: '#dddddd'
+              },
+              fills: colors.fills,
+              strokes: colors.strokes,
+              strokeWidth: 3,
+              showInLegend: false
             },
           ],
         };
