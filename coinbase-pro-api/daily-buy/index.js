@@ -3,7 +3,7 @@ const API = {
   google: require('../google')
 };
 
-module.exports = async function (context, req) {  
+module.exports = async function (context, req) {
   const DEFAULT = {
     DEPOSIT: {
       SOURCE: null,
@@ -29,7 +29,7 @@ module.exports = async function (context, req) {
   /**
    * Const enum for logging message types
    */
-   const LOG_TYPE = {
+  const LOG_TYPE = {
     INFO: "INFO",
     ERROR: "ERROR"
   };
@@ -38,7 +38,7 @@ module.exports = async function (context, req) {
    * reported when the request completes.
    */
   class Logger {
-    constructor() {}
+    constructor() { }
 
     content = [];
 
@@ -76,7 +76,7 @@ module.exports = async function (context, req) {
    * @returns {Promise}
    *  Returns with no execution when time elapses.
    */
-   function sleep(ms) {
+  function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
@@ -163,7 +163,7 @@ module.exports = async function (context, req) {
               (await API.google.get(name))?.forEach(fill => {
                 // Check that the current fill matches a product from the
                 // orders list
-                if (orders.products.find(({product}) => product == fill.product)) {
+                if (orders.products.find(({ product }) => product == fill.product)) {
                   // Add the fill to the full list of fills. Will be combined
                   // with other fill sources later.
                   (fills[fill.product] || (fills[fill.product] = [])).push(fill);
@@ -248,7 +248,7 @@ module.exports = async function (context, req) {
               logger.log({
                 type: LOG_TYPE.ERROR,
                 message: `Purchase amount ${current.amountToBuy} is too small for ${product}. Minimum amount is ${current.product?.base_min_size}`,
-                data: { 
+                data: {
                   amount: current.amountToBuy,
                   product: current.product
                 }
@@ -265,7 +265,7 @@ module.exports = async function (context, req) {
             current.adjustedPrice = round((Number(current.stats?.last) + (Number(current.product?.quote_increment) * 10)), Number(current.product?.quote_increment));
             // Accumulate the total amount we need to deposit to cover all of
             // the buys.
-            fills.amountToDeposit += current.spendRatio;
+            fills.amountToDeposit += (current.amountToBuy * current.adjustedPrice);
           }
 
           // Encapsulate calls in a while loop, so we can exit prematurely 
@@ -274,75 +274,87 @@ module.exports = async function (context, req) {
             // Check that we have a valid amount to deposit.
             if (fills.amountToDeposit && orders.deposit?.currency) {
               if (coinbaseResponse(response = await API.coinbase.accounts(), 'API.coinbase.accounts()')) {
-                const account = response.find(({currency}) => currency == 'USD');
+                const account = response.find(({ currency }) => currency == 'USD');
+                const minimum = (orders.deposit?.minimum || DEFAULT.DEPOSIT.MINIMUM);
 
-                fills.amountToDeposit -= account?.available || 0;
+                fills.amountToDeposit -= (account?.available || 0);
 
-                if(fills.amountToDeposit && fills.amountToDeposit < (orders.deposit?.minimum || DEFAULT.DEPOSIT.MINIMUM)) {
-                  fills.amountToDeposit = (orders.deposit?.minimum || DEFAULT.DEPOSIT.MINIMUM);
+                if (fills.amountToDeposit <= 0) {
+                  // Already have enough in the account, no need to deposit,
+                  // just attempt to buy.
+                  fills.amountToDeposit = 0;
+                  logger.log({
+                    type: LOG_TYPE.INFO,
+                    message: `Account already has ${currencyPrefix[account?.currency]}${round(account?.available, 0.01)} ${account?.currency} available, no need to deposit additional funds.`,
+                    data: account
+                  });
+                } else {
+                  if (fills.amountToDeposit < minimum) {
+                    fills.amountToDeposit = minimum;
+                  }
+
+                  // Get a list of payment methods available to Coinbase.
+                  response = await API.coinbase.paymentMethods();
+
+                  // Check the response...
+                  if (coinbaseResponse(response, 'coinbase.paymentMethods()')) {
+                    // Extract the payment ID and check that it is valid
+                    if (fills.paymentId = response.filter(paymentMethod => new RegExp((orders.deposit?.source || DEFAULT.DEPOSIT.SOURCE), 'i').test(paymentMethod.name))?.[0]?.id) {
+                      // Attempt to make the deposit...
+                      const deposit = {
+                        payment_method_id: fills.paymentId,
+                        amount: round(fills.amountToDeposit),
+                        currency: (orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)
+                      };
+
+                      response = (await API.coinbase.deposits.paymentMethod(deposit));
+
+                      // Check the response...
+                      if (coinbaseResponse(response, 'coinbase.deposits.paymentMethod()')) {
+                        logger.log({
+                          type: LOG_TYPE.INFO,
+                          message: `Deposit for ${currencyPrefix[(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)]}${round(deposit.amount, 0.01)} ${deposit.currency} from ${(orders.deposit?.source || DEFAULT.DEPOSIT.SOURCE)} successful.`,
+                          data: response
+                        });
+                      }
+                    } else { // No payment method
+                      logger.log({
+                        type: LOG_TYPE.ERROR,
+                        message: `No payment method found matching name '${paymentMethod.name}'`,
+                        data: paymentMethod
+                      });
+                    }
+                  }
                 }
 
-                // Get a list of payment methods available to Coinbase.
-                response = await API.coinbase.paymentMethods();
+                // Iterate on last time to make the purchases, now that the deposit
+                // has cleared.
+                for (const { product, weight } of orders.products) {
+                  const current = fills[product];
 
-                // Check the response...
-                if (coinbaseResponse(response, 'coinbase.paymentMethods()')) {
-                  // Extract the payment ID and check that it is valid
-                  if (fills.paymentId = response.filter(paymentMethod => new RegExp((orders.deposit?.source || DEFAULT.DEPOSIT.SOURCE), 'i').test(paymentMethod.name))?.[0]?.id) {
-                    // Attempt to make the deposit...
-                    const deposit = {
-                      payment_method_id: fills.paymentId,
-                      amount: round(fills.amountToDeposit),
-                      currency: (orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)
+                  // Check and make sure there are valid amounts before
+                  // attempting the purchase.
+                  if (current?.amountToBuy && current?.adjustedPrice) {
+                    // Try to place the order...
+                    const order = {
+                      type: 'limit',
+                      side: 'buy',
+                      product_id: product,
+                      size: current.amountToBuy,
+                      price: current.adjustedPrice
                     };
 
-                    response = {};//(await API.coinbase.deposits.paymentMethod(deposit));
+                    response = (await API.coinbase.placeOrder(order));
 
                     // Check the response...
-                    if (coinbaseResponse(response, 'coinbase.deposits.paymentMethod()')) {
+                    if (coinbaseResponse(response, `coinbase.placeOrder(${product})`)) {
+                      // Success, add the information to the log.
                       logger.log({
                         type: LOG_TYPE.INFO,
-                        message: `Deposit for ${currencyPrefix[(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)]}${round(deposit.amount, 0.01)} ${deposit.currency} from ${(orders.deposit?.source || DEFAULT.DEPOSIT.SOURCE)} successful.`,
+                        message: `Placed ${order.type} ${order.side} order for ${order.size} ${order.product_id} at price ${currencyPrefix[(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)]}${round(order.price, 0.01)} ${(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)}.`,
                         data: response
                       });
-
-                      // Iterate on last time to make the purchases, now that the deposit
-                      // has cleared.
-                      for (const { product, weight } of orders.products) {
-                        const current = fills[product];
-
-                        // Check and make sure there are valid amounts before
-                        // attempting the purchase.
-                        if (current?.amountToBuy && current?.adjustedPrice) {
-                          // Try to place the order...
-                          const order = {
-                            type: 'limit',
-                            side: 'buy',
-                            product_id: product,
-                            size: current.amountToBuy,
-                            price: current.adjustedPrice
-                          };
-
-                          response = {};//(await API.coinbase.placeOrder(order));
-
-                          // Check the response...
-                          if (coinbaseResponse(response, `coinbase.placeOrder(${product})`)) {
-                            // Success, add the information to the log.
-                            logger.log({
-                              type: LOG_TYPE.INFO,
-                              message: `Placed ${order.type} ${order.side} order for ${order.size} ${order.product_id} at price ${currencyPrefix[(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)]}${round(order.price, 0.01)} ${(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)}.`,
-                              data: response
-                            });
-                          }
-                        }
-                      }
                     }
-                  } else { // No payment method
-                    logger.log({
-                      type: LOG_TYPE.ERROR,
-                      message: `No payment method found matching name '${paymentMethod.name}'`,
-                      data: paymentMethod
-                    });
                   }
                 }
               }
