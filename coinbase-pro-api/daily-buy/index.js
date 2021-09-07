@@ -308,7 +308,7 @@ module.exports = async function (context, req) {
                         currency: (orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)
                       };
 
-                      response = {};//(await API.coinbase.deposits.paymentMethod(deposit));
+                      response = (await API.coinbase.deposits.paymentMethod(deposit));
 
                       // Check the response...
                       if (coinbaseResponse(response, 'coinbase.deposits.paymentMethod()')) {
@@ -353,7 +353,7 @@ module.exports = async function (context, req) {
                       price: current.adjustedPrice
                     };
 
-                    response = {};//(await API.coinbase.placeOrder(order));
+                    response = (await API.coinbase.placeOrder(order));
 
                     // Check the response...
                     if (coinbaseResponse(response, `coinbase.placeOrder(${product})`)) {
