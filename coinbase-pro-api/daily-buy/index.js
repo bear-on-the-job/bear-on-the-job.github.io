@@ -124,6 +124,7 @@ module.exports = async function (context, req) {
   const coinbase = ((req.body && req.body.coinbase) || (req.query.coinbase && decodeURIComponent(req.query.coinbase)));
   const google = ((req.body && req.body.google) || (req.query.google && JSON.parse(decodeURIComponent(req.query.google))));
   const orders = ((req.body && req.body.orders) || (req.query.orders && decodeURIComponent(req.query.orders)));
+  const overrides = ((req.body && req.body.overrides) || (req.query.overrides && decodeURIComponent(req.query.overrides)));
 
   const logger = new Logger();
 
@@ -226,10 +227,10 @@ module.exports = async function (context, req) {
             // Calculate the time since the last purchase. 
             current.elapsed = Math.min((orders?.weighting?.maxDays || DEFAULT.WEIGHTING.MAX_DAYS), Math.abs(new Date() - new Date(current.latest?.created_at)) / (1000/*ms*/ * 60/*secs*/ * 60/*mins*/ * 24/*hours*/));
 
-            // If 'overrideDays' is specified in the query params, then force
+            // If 'overrides' is specified in the query params, then force
             // the purchase to be at least that many day's worth.
-            if (orders?.weighting?.overrideDays) {
-              current.elapsed = Math.max(current.elapsed, orders.weighting.overrideDays);
+            if (overrides?.days) {
+              current.elapsed = Math.max(current.elapsed, overrides.days);
             }
           }
 
