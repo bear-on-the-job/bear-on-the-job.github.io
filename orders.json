@@ -1,8 +1,9 @@
 {
   "deposit": {
     "source": "Evansville",
-    "amount": 20,
-    "currency": "USD"
+    "amount": 20.00,
+    "currency": "USD",
+    "minimum": 10.00
   },
   "weighting": {
     "exponent": 1.8,
