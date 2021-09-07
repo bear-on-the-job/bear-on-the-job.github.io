@@ -77,7 +77,7 @@ module.exports = async function (context, req) {
    *  Returns with no execution when time elapses.
    */
   function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(()=>{resolve(true)}, ms));
   }
 
   /**
@@ -233,10 +233,11 @@ module.exports = async function (context, req) {
           for (const { product, weight } of orders.products) {
             // Reference to the current product fills.
             const current = fills[product];
+            const change = Number(current?.stats?.last || 1) / Number(current?.stats?.open || current?.stats?.last || 1);
 
             // Calculate how much to spend on current product, based on time 
             // since last purchase, and the adjusted weight of the product.
-            current.spendRatio = (orders.deposit?.amount || DEFAULT.DEPOSIT.AMOUNT) * current.elapsed * (current.adjustedWeight / fills.totalWeight);
+            current.spendRatio = ((orders.deposit?.amount || DEFAULT.DEPOSIT.AMOUNT) * current.elapsed * (current.adjustedWeight / fills.totalWeight)) / change;
             // Calculate amount to buy, based on our desired spend amount, and 
             // current price of product.
             current.amountToBuy = round((current.spendRatio / current.stats?.last), current.product?.base_increment);
@@ -307,15 +308,15 @@ module.exports = async function (context, req) {
                         currency: (orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)
                       };
 
-                      response = (await API.coinbase.deposits.paymentMethod(deposit));
+                      response = {};//(await API.coinbase.deposits.paymentMethod(deposit));
 
                       // Check the response...
                       if (coinbaseResponse(response, 'coinbase.deposits.paymentMethod()')) {
                         logger.log({
                           type: LOG_TYPE.INFO,
-                          message: `Deposit for ${currencyPrefix[(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)]}${round(deposit.amount, 0.01)} ${deposit.currency} from ${(orders.deposit?.source || DEFAULT.DEPOSIT.SOURCE)} successful.`,
+                          message: `Deposit for ${currencyPrefix[(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)]}${deposit.amount} ${deposit.currency} from ${(orders.deposit?.source || DEFAULT.DEPOSIT.SOURCE)} successful.`,
                           data: response
-                        });
+                        });                        
                       }
                     } else { // No payment method
                       logger.log({
@@ -324,6 +325,14 @@ module.exports = async function (context, req) {
                         data: paymentMethod
                       });
                     }
+                  }
+                }
+
+                // Wait until the funds are available
+                let counter = 5;
+                while(counter-- && await sleep(1000)){
+                  if (coinbaseResponse(response = await API.coinbase.accounts(), 'API.coinbase.accounts()')) {
+                    if(response.find(({ currency }) => currency == orders.deposit?.currency)?.available >= round(fills.amountToDeposit)) break;
                   }
                 }
 
@@ -344,7 +353,7 @@ module.exports = async function (context, req) {
                       price: current.adjustedPrice
                     };
 
-                    response = (await API.coinbase.placeOrder(order));
+                    response = {};//(await API.coinbase.placeOrder(order));
 
                     // Check the response...
                     if (coinbaseResponse(response, `coinbase.placeOrder(${product})`)) {
