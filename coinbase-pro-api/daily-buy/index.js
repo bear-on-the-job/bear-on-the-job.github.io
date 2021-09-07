@@ -223,8 +223,14 @@ module.exports = async function (context, req) {
               ?.filter(fill => fill.created_at && /buy/i.test(fill.side))
               ?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
               ?.[0];
-            // Calculate the time since the last purchase
+            // Calculate the time since the last purchase. 
             current.elapsed = Math.min((orders?.weighting?.maxDays || DEFAULT.WEIGHTING.MAX_DAYS), Math.abs(new Date() - new Date(current.latest?.created_at)) / (1000/*ms*/ * 60/*secs*/ * 60/*mins*/ * 24/*hours*/));
+
+            // If 'overrideDays' is specified in the query params, then force
+            // the purchase to be at least that many day's worth.
+            if (orders?.weighting?.overrideDays) {
+              current.elapsed = Math.max(current.elapsed, orders.weighting.overrideDays);
+            }
           }
 
           // Iterate a second time to determine spend amounts. This needs to 
@@ -233,7 +239,7 @@ module.exports = async function (context, req) {
           for (const { product, weight } of orders.products) {
             // Reference to the current product fills.
             const current = fills[product];
-            const change = Number(current?.stats?.last || 1) / Number(current?.stats?.open || current?.stats?.last || 1);
+            const change = (((Number(current?.stats?.last || 1) / Number(current?.stats?.open || current?.stats?.last || 1)) - 1) * 1) + 1;
 
             // Calculate how much to spend on current product, based on time 
             // since last purchase, and the adjusted weight of the product.
