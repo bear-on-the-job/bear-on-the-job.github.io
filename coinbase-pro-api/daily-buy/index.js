@@ -274,7 +274,7 @@ module.exports = async function (context, req) {
             // Check that we have a valid amount to deposit.
             if (fills.amountToDeposit && orders.deposit?.currency) {
               if (coinbaseResponse(response = await API.coinbase.accounts(), 'API.coinbase.accounts()')) {
-                const account = response.find(({ currency }) => currency == 'USD');
+                const account = response.find(({ currency }) => currency == orders.deposit?.currency);
                 const minimum = (orders.deposit?.minimum || DEFAULT.DEPOSIT.MINIMUM);
 
                 fills.amountToDeposit -= (account?.available || 0);
