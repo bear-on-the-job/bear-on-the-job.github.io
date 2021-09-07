@@ -11,7 +11,7 @@
   "products": [
     {
       "product": "ETH-USD",
-      "weight": 5
+      "weight": 4
     },
     {
       "product": "BTC-USD",
@@ -27,7 +27,7 @@
     },
     {
       "product": "SOL-USD",
-      "weight": 1
+      "weight": 3
     },    
     {
       "product": "LTC-USD",
@@ -39,10 +39,6 @@
     },
     {
       "product": "ALGO-USD",
-      "weight": 0.5
-    },
-    {
-      "product": "MATIC-USD",
       "weight": 0.5
     }
   ]
