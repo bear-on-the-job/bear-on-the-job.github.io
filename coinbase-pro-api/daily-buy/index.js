@@ -9,7 +9,8 @@ module.exports = async function (context, req) {
       SOURCE: null,
       AMOUNT: 0,
       CURRENCY: 'USD',
-      MINIMUM: 10
+      MINIMUM: 10,
+      MAXIMUM: 200
     },
     WEIGHTING: {
       MAX_DAYS: 7,
@@ -276,9 +277,12 @@ module.exports = async function (context, req) {
             fills.amountToDeposit += (current.amountToBuy * current.adjustedPrice);
           }
 
+          const currency = (orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY);
+          const prefix = currencyPrefix[currency];
+
           // Encapsulate calls in a while loop, so we can exit prematurely 
           // and skip additional processing.
-          if (true) {
+          if (fills.amountToDeposit < (orders.deposit?.maximum || DEFAULT.DEPOSIT.MAXIMUM)) {
             // Check that we have a valid amount to deposit.
             if (fills.amountToDeposit && orders.deposit?.currency) {
               if (coinbaseResponse(response = await API.coinbase.accounts(), 'API.coinbase.accounts()')) {
@@ -305,7 +309,7 @@ module.exports = async function (context, req) {
                   response = await API.coinbase.paymentMethods();
 
                   // Check the response...
-                  if (coinbaseResponse(response, 'coinbase.paymentMethods()')) {
+                  if (coinbaseResponse(response, 'API.coinbase.paymentMethods()')) {
                     // Extract the payment ID and check that it is valid
                     if (fills.paymentId = response.filter(paymentMethod => new RegExp((orders.deposit?.source || DEFAULT.DEPOSIT.SOURCE), 'i').test(paymentMethod.name))?.[0]?.id) {
                       // Attempt to make the deposit...
@@ -318,7 +322,7 @@ module.exports = async function (context, req) {
                       response = (await API.coinbase.deposits.paymentMethod(deposit));
 
                       // Check the response...
-                      if (coinbaseResponse(response, 'coinbase.deposits.paymentMethod()')) {
+                      if (coinbaseResponse(response, `API.coinbase.deposits.paymentMethod('${paymentMethod.name}')`)) {
                         logger.log({
                           type: LOG_TYPE.INFO,
                           message: `Deposit for ${currencyPrefix[(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)]}${deposit.amount} ${deposit.currency} from ${(orders.deposit?.source || DEFAULT.DEPOSIT.SOURCE)} successful.`,
@@ -361,13 +365,17 @@ module.exports = async function (context, req) {
                     };
 
                     response = (await API.coinbase.placeOrder(order));
+                    
+                    const currency = (orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY);
+                    const prefix = currencyPrefix[currency];
 
                     // Check the response...
-                    if (coinbaseResponse(response, `coinbase.placeOrder(${product})`)) {
+                    if (coinbaseResponse(response, `API.coinbase.placeOrder('${product})'`)) {
                       // Success, add the information to the log.
                       logger.log({
                         type: LOG_TYPE.INFO,
-                        message: `Placed ${order.type} ${order.side} order for ${order.size} ${order.product_id} at price ${currencyPrefix[(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)]}${round(order.price, 0.01)} ${(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)}.`,
+                        //message: `Placed ${order.type} ${order.side} order for ${order.size} ${order.product_id} at price ${currencyPrefix[(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)]}${round(order.price, 0.01)} ${(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)}.`,
+                        message: `Spent ${prefix}${round(order.size * order.price)} ${currency} on ${product} (${order.type} ${order.side} order for ${order.size} at price ${prefix}${round(order.price)} ${currency})`,
                         data: response
                       });
                     }
@@ -384,6 +392,12 @@ module.exports = async function (context, req) {
                 }
               });
             }
+          } else {
+            logger.log({
+              type: LOG_TYPE.ERROR,
+              message: `Calculated amount to deposit (${prefix}${fills.amountToDeposit} ${currency}) is too high.`,
+              data: account
+            });
           }
         }
       }
