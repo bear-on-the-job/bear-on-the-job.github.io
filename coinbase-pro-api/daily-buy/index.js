@@ -385,7 +385,7 @@ module.exports = async function (context, req) {
             } else { // Invalid amount to deposit
               logger.log({
                 type: LOG_TYPE.ERROR,
-                message: `Invalid amount to deposit: ${fills.amountToDeposit}.`,
+                message: `Invalid amount to deposit (${prefix}${fills.amountToDeposit} ${currency}).`,
                 data: {
                   amount: fills.amountToDeposit,
                   deposit: orders?.deposit
