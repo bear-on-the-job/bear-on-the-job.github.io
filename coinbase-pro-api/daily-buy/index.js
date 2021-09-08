@@ -241,11 +241,12 @@ module.exports = async function (context, req) {
           for (const { product, weight } of orders.products) {
             // Reference to the current product fills.
             const current = fills[product];
-            const change = (((Number(current?.stats?.last || 1) / Number(current?.stats?.open || current?.stats?.last || 1)) - 1) * 1) + 1;
+            const change = Number(current?.stats?.last || 1) / Number(current?.stats?.open || current?.stats?.last || 1);
+            const scale = (((change - 1) * (change < 1 ? 1.5 : 0.1)) + 1);
 
             // Calculate how much to spend on current product, based on time 
             // since last purchase, and the adjusted weight of the product.
-            current.spendRatio = ((orders.deposit?.amount || DEFAULT.DEPOSIT.AMOUNT) * current.elapsed * (current.adjustedWeight / fills.totalWeight)) / change;
+            current.spendRatio = ((orders.deposit?.amount || DEFAULT.DEPOSIT.AMOUNT) * current.elapsed * (current.adjustedWeight / fills.totalWeight)) / scale;
             // Calculate amount to buy, based on our desired spend amount, and 
             // current price of product.
             current.amountToBuy = round((current.spendRatio / current.stats?.last), current.product?.base_increment);
