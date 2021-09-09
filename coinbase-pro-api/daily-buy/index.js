@@ -272,17 +272,19 @@ module.exports = async function (context, req) {
 
             // Adjust the price so it is slightly above current price. This 
             // helps the limit order fill immediately.
-            current.adjustedPrice = round((Number(current.stats?.last) + (Number(current.product?.quote_increment) * 10)), Number(current.product?.quote_increment));
+            current.adjustedPrice = round((Number(current.stats?.last) + (Number(current.product?.quote_increment) * 20)), Number(current.product?.quote_increment));
             // Accumulate the total amount we need to deposit to cover all of
             // the buys.
             fills.amountToDeposit += (current.amountToBuy * current.adjustedPrice);
           }
 
+          // Increase deposit amount by 5% to cover slosh in orders
+          fills.amountToDeposit *= 1.05;
+          // Helper variables
           const currency = (orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY);
           const prefix = currencyPrefix[currency];
 
-          // Encapsulate calls in a while loop, so we can exit prematurely 
-          // and skip additional processing.
+          // Cap deposits at a max
           if (fills.amountToDeposit < (orders.deposit?.maximum || DEFAULT.DEPOSIT.MAXIMUM)) {
             // Check that we have a valid amount to deposit.
             if (fills.amountToDeposit && orders.deposit?.currency) {
@@ -421,7 +423,7 @@ module.exports = async function (context, req) {
     context.res = { status: 500 };
     logger.log({
       type: LOG_TYPE.ERROR,
-      message: `Exception caught`,
+      message: `Exception caught: ${error.message}`,
       data: JSON.parse(JSON.stringify(error))
     });
   }
