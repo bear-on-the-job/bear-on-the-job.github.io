@@ -325,7 +325,7 @@ module.exports = async function (context, req) {
                       response = (await API.coinbase.deposits.paymentMethod(deposit));
 
                       // Check the response...
-                      if (coinbaseResponse(response, `API.coinbase.deposits.paymentMethod('${paymentMethod.name}')`)) {
+                      if (coinbaseResponse(response, `API.coinbase.deposits.paymentMethod('${orders.deposit?.source}')`)) {
                         logger.log({
                           type: LOG_TYPE.INFO,
                           message: `Deposit for ${currencyPrefix[(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)]}${deposit.amount} ${deposit.currency} from ${(orders.deposit?.source || DEFAULT.DEPOSIT.SOURCE)} successful.`,
@@ -335,8 +335,8 @@ module.exports = async function (context, req) {
                     } else { // No payment method
                       logger.log({
                         type: LOG_TYPE.ERROR,
-                        message: `No payment method found matching name '${paymentMethod.name}'`,
-                        data: paymentMethod
+                        message: `No payment method found matching name '${orders.deposit?.source}'`,
+                        data: orders.deposit
                       });
                     }
                   }
