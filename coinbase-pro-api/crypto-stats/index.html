@@ -26,6 +26,17 @@
         padding: 1rem;
         overflow: auto;
     }
+
+    .rag-red {
+      background-color: lightcoral;
+    }
+    .rag-green {
+      background-color: lightgreen;
+    }
+    .align-right {
+      margin-left: auto; 
+      margin-right: 0;
+    }
 </style>
   <script>
     /**
@@ -45,6 +56,11 @@
       const inverseLog = Math.log10(inverse);
       return parseFloat(value).toFixed(inverseLog);
     }
+
+    const nameMap = {
+      "TRX-USD": 'tron',
+      "SIA-USD": 'siacoin',
+    };
 
     const colors = {
       'DOGE-USD': '#65d196',
@@ -83,13 +99,49 @@
         });
       });
 
+      const missingNames = Object.keys(response.data)
+        .filter((product) => response.data[product]?.stats?.error)
+        .reduce((missing, product) => missing + ((nameMap[product] + ',') || ''), '');
+
+      const missingPrices = await new Promise(resolve => {
+        $.ajax({
+          crossDomain: true,
+          url: 'https://api.coingecko.com/api/v3/simple/price',
+          method: "GET",
+          dataType: 'json',
+          data: {
+            ids: missingNames,
+            vs_currencies: 'usd'
+          },
+          success: (data) => {
+            resolve(data);
+          },
+          error: (error) => {
+            resolve(error);
+          }
+        });
+      });      
+
+      for(const product in response.data) {
+        if(!response.data[product].stats || response.data[product]?.stats?.error) {
+          (response.data[product].stats || {}).last = missingPrices[nameMap[product]]?.usd;
+        }
+      }
+
+
       $(document).ready(()=>{
         const gridOptions = {
           columnDefs: [
-            { field: 'Product' },
-            { field: 'Average Cost' },
-            { field: 'Current Price' },
-            { field: '% Gain' }
+            { field: 'Product', type: 'rightAligned' },
+            { field: 'Total Cost', type: 'rightAligned' },
+            { field: 'Current Value', type: 'rightAligned' },
+            { field: 'Average Cost', type: 'rightAligned' },
+            { field: 'Current Price', type: 'rightAligned' },
+            { 
+              field: '% Gain',
+              type: 'rightAligned',
+              cellStyle: params => params.value < 0 ? { color: 'red' } : { color: 'green' }
+            }
           ],
           rowData: Object.keys(response.data).map((key, index) => {
             return {
@@ -101,7 +153,7 @@
               '% Gain': round((((response.data[key]?.stats?.last || 0) / (response.data[key]?.averageCost || 1)) - 1) * 100),
             }
           })
-          .filter(product => product['Current Value'])
+          .filter(product => product['Current Value'] > 0)
           .sort((a,b) => Number(b['Current Value']) - Number(a['Current Value']))
         };
 
@@ -112,6 +164,9 @@
           return '#ffffff'; //totalCost > currentValue ? '#ff1111' : '#ffffff';
         });
 
+        response.data.totalCost = gridOptions.rowData.reduce((total, row) => Number(total) + Number(row['Total Cost']), 0);
+        response.data.currentValue = gridOptions.rowData.reduce((total, row) => Number(total) + Number(row['Current Value']), 0);
+
         const pieOptions = {
           container: document.querySelector('#chart'),
           data: gridOptions.rowData,
@@ -119,7 +174,7 @@
             {
               type: 'pie',
               title: {
-                text: 'Current Value',
+                text: `Current Value: $${round(response.data.currentValue)}`,
               },
               labelKey: 'Product',
               angleKey: 'Current Value',
@@ -138,7 +193,7 @@
             {
               type: 'pie',
               title: {
-                text: 'Total Cost',
+                text: `Total Cost: $${round(response.data.totalCost)}`,
               },
               labelKey: 'Product',
               angleKey: 'Total Cost',
