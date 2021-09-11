@@ -242,7 +242,7 @@ module.exports = async function (context, req) {
             // Reference to the current product fills.
             const current = fills[product];
             const change = Number(current?.stats?.last || 1) / Number(current?.stats?.open || current?.stats?.last || 1);
-            const scale = (((change - 1) * (change < 1 ? 1.5 : 0.1)) + 1);
+            const scale = (((change - 1) * (change < 1 ? 4 : 0.1)) + 1);
 
             // Calculate how much to spend on current product, based on time 
             // since last purchase, and the adjusted weight of the product.
