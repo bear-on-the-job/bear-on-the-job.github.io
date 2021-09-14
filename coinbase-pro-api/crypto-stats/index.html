@@ -16,7 +16,7 @@
   <style media="only screen">
     html, body {
         height: 100%;
-        width: 100%;
+        width: 700px;
         margin: 0;
         box-sizing: border-box;
         -webkit-overflow-scrolling: touch;
@@ -144,10 +144,10 @@
           onGridReady: params => params.api.sizeColumnsToFit(),
           columnDefs: [
             { field: 'Product', type: 'rightAligned', resizable: true },
-            { field: 'Total Cost', type: 'rightAligned', resizable: true },
-            { field: 'Current Value', type: 'rightAligned', resizable: true },
-            { field: 'Average Cost', type: 'rightAligned', resizable: true },
-            { field: 'Current Price', type: 'rightAligned', resizable: true },
+            { field: 'Cost', type: 'rightAligned', resizable: true },
+            { field: 'Value', type: 'rightAligned', resizable: true },
+            { field: 'Avg Cost', type: 'rightAligned', resizable: true },
+            { field: 'Price', type: 'rightAligned', resizable: true },
             { 
               field: '% Gain',
               type: 'rightAligned',
@@ -157,26 +157,26 @@
           rowData: Object.keys(response.data).map((key, index) => {
             return {
               'Product': key,
-              'Average Cost': round(response.data[key]?.averageCost),
-              'Total Cost': round(response.data[key]?.totalCost),              
-              'Current Price': round(response.data[key]?.stats?.last || 0),
-              'Current Value': round((response.data[key]?.stats?.last || 0) * (response.data[key]?.totalAmount || 0)),
+              'Avg Cost': round(response.data[key]?.averageCost),
+              'Cost': round(response.data[key]?.totalCost),              
+              'Price': round(response.data[key]?.stats?.last || 0),
+              'Value': round((response.data[key]?.stats?.last || 0) * (response.data[key]?.totalAmount || 0)),
               '% Gain': round((((response.data[key]?.stats?.last || 0) / (response.data[key]?.averageCost || 1)) - 1) * 100),
             }
           })
-          .filter(product => product['Current Value'] > 0)
-          .sort((a,b) => Number(b['Current Value']) - Number(a['Current Value']))
+          .filter(product => product['Value'] > 0)
+          .sort((a,b) => Number(b['Value']) - Number(a['Value']))
         };
 
         colors.fills = gridOptions.rowData.map(({'Product': product}) => {
           return colors[product];
         });
-        colors.strokes = gridOptions.rowData.map(({'Total Cost': totalCost, 'Current Value': currentValue}) => {
+        colors.strokes = gridOptions.rowData.map(({'Cost': totalCost, 'Value': currentValue}) => {
           return '#ffffff'; //totalCost > currentValue ? '#ff1111' : '#ffffff';
         });
 
-        response.data.totalCost = gridOptions.rowData.reduce((total, row) => Number(total) + Number(row['Total Cost']), 0);
-        response.data.currentValue = gridOptions.rowData.reduce((total, row) => Number(total) + Number(row['Current Value']), 0);
+        response.data.totalCost = gridOptions.rowData.reduce((total, row) => Number(total) + Number(row['Cost']), 0);
+        response.data.currentValue = gridOptions.rowData.reduce((total, row) => Number(total) + Number(row['Value']), 0);
 
         const pieOptions = {
           container: document.querySelector('#chart'),
@@ -188,7 +188,7 @@
                 text: `Current Value: $${round(response.data.currentValue)}`,
               },
               labelKey: 'Product',
-              angleKey: 'Current Value',
+              angleKey: 'Value',
               innerRadiusOffset: -40,
               label: {
                 enabled: false
@@ -207,7 +207,7 @@
                 text: `Total Cost: $${round(response.data.totalCost)}`,
               },
               labelKey: 'Product',
-              angleKey: 'Total Cost',
+              angleKey: 'Cost',
               outerRadiusOffset: -100,
               innerRadiusOffset: -140,
               label: {
