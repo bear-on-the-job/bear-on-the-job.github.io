@@ -141,12 +141,13 @@
 
       $(document).ready(()=>{
         const gridOptions = {
+          onGridReady: params => params.api.sizeColumnsToFit(),
           columnDefs: [
-            { field: 'Product', type: 'rightAligned' },
-            { field: 'Total Cost', type: 'rightAligned' },
-            { field: 'Current Value', type: 'rightAligned' },
-            { field: 'Average Cost', type: 'rightAligned' },
-            { field: 'Current Price', type: 'rightAligned' },
+            { field: 'Product', type: 'rightAligned', resizable: true },
+            { field: 'Total Cost', type: 'rightAligned', resizable: true },
+            { field: 'Current Value', type: 'rightAligned', resizable: true },
+            { field: 'Average Cost', type: 'rightAligned', resizable: true },
+            { field: 'Current Price', type: 'rightAligned', resizable: true },
             { 
               field: '% Gain',
               type: 'rightAligned',
@@ -228,6 +229,7 @@
         // create the grid passing in the div to use together with the columns & data we want to use
         new agGrid.Grid(grid, gridOptions);
         agCharts.AgChart.create(pieOptions);
+        agGrid.sizeColumnsToFit();
       });
 
     })();
