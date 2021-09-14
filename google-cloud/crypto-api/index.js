@@ -7,8 +7,68 @@ const API = {
   coinbase: require('./common/coinbase'),
   google: require('./common/google')
 };
+const { LOG_TYPE, Logger } = require('../logger');
 
- //module.exports = async function (context, req) {
+/**
+ * Helper function to emulate sleep() functions in other languages. When 
+ * called with 'await', will pause current thread for specified time.
+ * 
+ * @param {Number} ms 
+ *  Amount of time to sleep, in milliseconds.
+ * @returns {Promise}
+ *  Returns with no execution when time elapses.
+ */
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(()=>{resolve(true)}, ms));
+}
+
+/**
+ * Rounding helper function, using minimum unit allowed. 
+ * 
+ * @param {Number} value 
+ *  Value to be rounded. Automatically converted to float before rounding.
+ * @param {Number} minUnit 
+ *  Minimum unit size for rounding. Defaults to 0.01 to easily round USD
+ *  currency values.
+ * @returns {float}
+ *  Rounded value as a float.
+ */
+function round(value, minUnit = 0.01) {
+  const inverse = 1 / parseFloat(minUnit);
+  const inverseLog = Math.log10(inverse);
+  return parseFloat(parseFloat(value).toFixed(inverseLog));
+}
+
+/**
+ * Helper function to extract named params from either the POST body, or the 
+ * query string of a GET request.
+ * 
+ * @param {object} req 
+ *  Request object from HTTP trigger.
+ * @param {string} param
+ *  Name of param to be extracted from query.
+ * @returns {any}
+ *  Returns any value sent for the param.
+ */
+function getParam(req, param) {
+  try {
+    return ((req?.body?.[param]) || (req?.query?.[param] && JSON.parse(decodeURIComponent(req.query[param]))));
+  } catch {
+    try {
+      return ((req?.body?.[param]) || (req?.query?.[param] && decodeURIComponent(req.query[param])));
+    } catch {
+      return null;
+    }
+  }
+}
+
+/**
+ * 
+ * @param {Express.Request} req 
+ *  Request object from HTTP trigger.
+ * @param {Express.Response} res 
+ *  Response object to control interaction with HTTP client
+ */
 exports.dailyBuy = async function (req, res) {
   const context = {res: res};
 
@@ -36,77 +96,6 @@ exports.dailyBuy = async function (req, res) {
   };
 
   /**
-   * Const enum for logging message types
-   */
-  const LOG_TYPE = {
-    INFO: "INFO",
-    ERROR: "ERROR"
-  };
-  /**
-   * Logging class to simplify collection of log messages that will be 
-   * reported when the request completes.
-   */
-  class Logger {
-    constructor() { }
-
-    content = [];
-
-    /**
-     * Logging function to add an entry with message and data to the log.
-     * 
-     * @param {object} entry 
-     *  Object containing a type, message, and optional data object
-     */
-    log(entry) {
-      this.content.push({
-        logType: entry?.type || LOG_TYPE.INFO,
-        message: entry?.message,
-        data: entry?.data
-      });
-    }
-
-    /**
-     * Accessor to get the content array containing log entries.
-     * 
-     * @returns {Array}
-     *  Array containing all the log entries so far.
-     */
-    get() {
-      return this.content;
-    }
-  };
-
-  /**
-   * Helper function to emulate sleep() functions in other languages. When 
-   * called with 'await', will pause current thread for specified time.
-   * 
-   * @param {Number} ms 
-   *  Amount of time to sleep, in milliseconds.
-   * @returns {Promise}
-   *  Returns with no execution when time elapses.
-   */
-  function sleep(ms) {
-    return new Promise(resolve => setTimeout(()=>{resolve(true)}, ms));
-  }
-
-  /**
-   * Rounding helper function, using minimum unit allowed. 
-   * 
-   * @param {Number} value 
-   *  Value to be rounded. Automatically converted to float before rounding.
-   * @param {Number} minUnit 
-   *  Minimum unit size for rounding. Defaults to 0.01 to easily round USD
-   *  currency values.
-   * @returns {float}
-   *  Rounded value as a float.
-   */
-  function round(value, minUnit = 0.01) {
-    const inverse = 1 / parseFloat(minUnit);
-    const inverseLog = Math.log10(inverse);
-    return parseFloat(parseFloat(value).toFixed(inverseLog));
-  }
-
-  /**
    * 
    * @param {object} response 
    *  The response object to check
@@ -128,12 +117,11 @@ exports.dailyBuy = async function (req, res) {
     }
   }
 
-
   // Get params from the request
-  const coinbase = ((req.body && req.body.coinbase) || (req.query.coinbase && decodeURIComponent(req.query.coinbase)));
-  const google = ((req.body && req.body.google) || (req.query.google && JSON.parse(decodeURIComponent(req.query.google))));
-  const orders = ((req.body && req.body.orders) || (req.query.orders && decodeURIComponent(req.query.orders)));
-  const overrides = ((req.body && req.body.overrides) || (req.query.overrides && decodeURIComponent(req.query.overrides)));
+  const coinbase = getParam(req, 'coinbase');
+  const google = getParam(req, 'google');
+  const orders = getParam(req, 'orders');
+  const overrides = getParam(req, 'overrides');
 
   const logger = new Logger();
 
@@ -438,12 +426,145 @@ exports.dailyBuy = async function (req, res) {
     });
   }
 
-  //(context.res = context.res || { status: 200 }).body = {
-  //  log: logger.get()
-  //};
-
+  context.res.set({'Access-Control-Allow-Origin': '*'});
   context.status = context.status || 200;
   context.res.status(context.status).json({
     log: logger.get()
   });
+
+  context.res.end();
+};
+
+/**
+ * 
+ * @param {Request} req 
+ *  Request object from HTTP trigger.
+ * @param {Response} res 
+ *  Response object to control interaction with HTTP client
+ */
+exports.cryptoStats = async function (req, res) {
+  const context = {
+    res: res,
+    status: null
+  };
+
+  // Get params from the request
+  const coinbase = getParam(req, 'coinbase');
+  const google = getParam(req, 'google');
+  const products = getParam(req, 'products');
+
+  // Logger instance to track execution.
+  const logger = new Logger();
+
+  // Initialize the fills object, which will be used to track calculations
+  // and amounts for products.
+  let info = {};
+
+  try {
+    // Check all required params are available
+    if (coinbase?.key && coinbase?.passphrase && coinbase?.secret) {
+      // Everything is at least available, attempt the workflow.
+      API.coinbase.init(coinbase.key, coinbase.passphrase, coinbase.secret);
+
+      // Check if google information has been provided, and get all 
+      // relevant fills from google sheets. The primary source of 
+      // our fills is from Coinbase, but this will provide supplemental
+      // information if some currency was purchasd from other sources.
+      if (google?.sheets?.names && google?.sheets?.key) {
+        // Initialize the API
+        API.google.init(google.sheets.key);
+        // Iterate through each named sheet
+        for (const name of google.sheets.names) {
+          // Iterate the fills from that sheet
+          (await API.google.get(name))?.forEach(fill => {
+            // Check that the current fill matches a product from the list
+            if (products.find(product => product == fill.product)) {
+              // Add the fill to the full list of fills. Will be combined
+              // with other fill sources later.
+              (info[fill.product]?.fills || (info[fill.product] = {fills:[]}).fills).push(fill);
+            }
+          });
+        }
+      }
+
+      // Iterate through all products in the order list
+      for (const product of products) {
+        // Get all coinbase fills for this product
+        let coinbaseFills = (await API.coinbase.fills(product));
+
+        if(Array.isArray(coinbaseFills)){
+          coinbaseFills.forEach(fill => {
+            (info[fill.product_id]?.fills || (info[fill.product_id] = {fills:[]}).fills).push(fill);
+          });
+        }
+
+        // Reference to the current product fills.
+        const current = info[product];
+
+        if(!current?.fills?.length) continue;
+
+        // Get current coinbase product info
+        current.product = (await API.coinbase.products(product));
+        current.stats = (await API.coinbase.products.stats(product));
+
+        // Calculate total amount bought
+        current.totalAmount = current.fills
+          ?.filter((fill) => /buy/i.test(fill.side))
+          ?.reduce((total, fill) => {
+            return Number(total) + Number(fill.size);
+          }, 0);
+        // Calculate total cost for this product
+        current.totalCost = current.fills
+          ?.filter((fill) => /buy/i.test(fill.side))
+          ?.reduce((total, fill) => Number(total) + (Number(fill.price) * Number(fill.size)), 0);
+        // Calculate average price per unit of this product
+        current.averageCost = current.totalCost / current.totalAmount;
+
+        // Determine the timestamp of the last purchase
+        current.latest = current.fills
+          ?.filter(fill => fill.created_at && /buy/i.test(fill.side))
+          ?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          ?.[0];
+        // Calculate the time since the last purchase
+        current.elapsed = {
+          total: Math.abs(new Date() - new Date(current.latest?.created_at)) / (1000/*ms*/ * 60/*secs*/ * 60/*mins*/ * 24/*hours*/)
+        };
+        current.elapsed.seconds = current.elapsed.total / 1000;
+        current.elapsed.minutes = current.elapsed.seconds / 60;
+        current.elapsed.hours = current.elapsed.minutes / 60;
+        current.elapsed.days = current.elapsed.hours / 24;
+
+        current.fills = null;
+      }
+
+    } else {
+      // Missing something...
+      context.status = 401;
+      logger.log({
+        type: LOG_TYPE.ERROR,
+        message: `Missing required params for authorization`,
+        data: {
+          key: !!coinbase?.key,
+          pass: !!coinbase?.passphrase,
+          secret: !!coinbase?.secret
+        }
+      });
+    }
+  } catch (error) {
+    // Exception
+    context.status = 500;
+    logger.log({
+      type: LOG_TYPE.ERROR,
+      message: `Exception caught: ${error.message}`,
+      data: JSON.parse(JSON.stringify(error))
+    });
+  }
+
+  context.res.set({'Access-Control-Allow-Origin': '*'});
+  context.status = context.status || 200;
+  context.res.status(context.status).json({
+    log: logger.get()
+  });
+
+  context.res.end();
 };
