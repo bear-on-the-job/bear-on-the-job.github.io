@@ -1,11 +1,14 @@
-'use strict';
+/**
+ * Build: node --inspect node_modules/@google-cloud/functions-framework --target=dailyBuy
+ * Deploy: gcloud functions deploy dailyBuy --trigger-http --runtime nodejs14 --allow-unauthenticated
+ */
 
 const API = {
-  coinbase: require('../coinbase'),
-  google: require('../google')
+  coinbase: require('./common/coinbase'),
+  google: require('./common/google')
 };
 
-//module.exports = async function (context, req) {
+ //module.exports = async function (context, req) {
 exports.dailyBuy = async function (req, res) {
   const context = {res: res};
 
@@ -327,7 +330,7 @@ exports.dailyBuy = async function (req, res) {
                         currency: (orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)
                       };
 
-                      response = {};//(await API.coinbase.deposits.paymentMethod(deposit));
+                      response = (await API.coinbase.deposits.paymentMethod(deposit));
 
                       // Check the response...
                       if (coinbaseResponse(response, `API.coinbase.deposits.paymentMethod('${orders.deposit?.source}')`)) {
@@ -372,7 +375,7 @@ exports.dailyBuy = async function (req, res) {
                       price: current.adjustedPrice
                     };
 
-                    response = {};//(await API.coinbase.placeOrder(order));
+                    response = (await API.coinbase.placeOrder(order));
                     
                     const currency = (orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY);
                     const prefix = currencyPrefix[currency];

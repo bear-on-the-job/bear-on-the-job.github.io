@@ -1,0 +1,14 @@
+{
+  "name": "daily-buy",
+  "version": "1.0.0",
+  "description": "Recurring Crypto Purchases",
+  "main": "index.js",
+  "scripts": {
+    "test": "daily-buy-test"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/functions-framework": "^1.9.0"
+  }
+}
