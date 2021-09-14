@@ -85,11 +85,13 @@
       let response = await new Promise(resolve => {
         $.ajax({
           crossDomain: true,
-          url: 'https://coinbase-pro.azurewebsites.net/api/crypto-stats',
           //url: "http://localhost:7071/api/crypto-stats",
+          //url: 'https://coinbase-pro.azurewebsites.net/api/crypto-stats',
+          //url: "http://localhost:8080",
+          url: 'https://us-central1-crypto-api-325914.cloudfunctions.net/cryptoStats',
           method: "POST",
           dataType: 'json',
-          data: atob(decodeURIComponent(data || '')),
+          data: JSON.parse(atob(decodeURIComponent(data || ''))),
           success: (data) => {
             resolve(data);
           },

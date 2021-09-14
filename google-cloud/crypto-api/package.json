@@ -4,11 +4,18 @@
   "description": "Recurring Crypto Purchases",
   "main": "index.js",
   "scripts": {
-    "test": "daily-buy-test"
+    "run-dailyBuy": "node --inspect node_modules/@google-cloud/functions-framework --target=dailyBuy",
+    "run-cryptoStats": "node --inspect node_modules/@google-cloud/functions-framework --target=cryptoStats",
+    "deploy-dailyBuy": "gcloud functions deploy dailyBuy --trigger-http --runtime nodejs14 --allow-unauthenticated",
+    "deploy-cryptoStats": "gcloud functions deploy cryptoStats --trigger-http --runtime nodejs14 --allow-unauthenticated",
+    "deploy": "concurrently --kill-others \"npm run deploy-dailyBuy\" \"npm run deploy-cryptoStats\""
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@google-cloud/functions-framework": "^1.9.0"
+  },
+  "devDependencies": {
+    "concurrently": "^6.2.1"
   }
 }

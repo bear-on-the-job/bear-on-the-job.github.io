@@ -7,7 +7,7 @@ const API = {
   coinbase: require('./common/coinbase'),
   google: require('./common/google')
 };
-const { LOG_TYPE, Logger } = require('../logger');
+const { LOG_TYPE, Logger } = require('./common/logger');
 
 /**
  * Helper function to emulate sleep() functions in other languages. When 
@@ -318,7 +318,7 @@ exports.dailyBuy = async function (req, res) {
                         currency: (orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)
                       };
 
-                      response = (await API.coinbase.deposits.paymentMethod(deposit));
+                      response = {};//(await API.coinbase.deposits.paymentMethod(deposit));
 
                       // Check the response...
                       if (coinbaseResponse(response, `API.coinbase.deposits.paymentMethod('${orders.deposit?.source}')`)) {
@@ -363,7 +363,7 @@ exports.dailyBuy = async function (req, res) {
                       price: current.adjustedPrice
                     };
 
-                    response = (await API.coinbase.placeOrder(order));
+                    response = {};//(await API.coinbase.placeOrder(order));
                     
                     const currency = (orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY);
                     const prefix = currencyPrefix[currency];
@@ -563,7 +563,8 @@ exports.cryptoStats = async function (req, res) {
   context.res.set({'Access-Control-Allow-Origin': '*'});
   context.status = context.status || 200;
   context.res.status(context.status).json({
-    log: logger.get()
+    log: logger.get(),
+    data: info
   });
 
   context.res.end();
