@@ -19,7 +19,7 @@ const { LOG_TYPE, Logger } = require('./common/logger');
  *  Returns with no execution when time elapses.
  */
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(()=>{resolve(true)}, ms));
+  return new Promise(resolve => setTimeout(() => { resolve(true) }, ms));
 }
 
 /**
@@ -43,7 +43,7 @@ function round(value, minUnit = 0.01) {
  * Helper function to extract named params from either the POST body, or the 
  * query string of a GET request.
  * 
- * @param {object} req 
+ * @param {Request} req 
  *  Request object from HTTP trigger.
  * @param {string} param
  *  Name of param to be extracted from query.
@@ -64,13 +64,13 @@ function getParam(req, param) {
 
 /**
  * 
- * @param {Express.Request} req 
+ * @param {Request} req 
  *  Request object from HTTP trigger.
- * @param {Express.Response} res 
+ * @param {Response} res 
  *  Response object to control interaction with HTTP client
  */
 exports.dailyBuy = async function (req, res) {
-  const context = {res: res};
+  const context = { res: res };
 
   const DEFAULT = {
     DEPOSIT: {
@@ -318,7 +318,7 @@ exports.dailyBuy = async function (req, res) {
                         currency: (orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)
                       };
 
-                      response = (await API.coinbase.deposits.paymentMethod(deposit));
+                      response = {};//(await API.coinbase.deposits.paymentMethod(deposit));
 
                       // Check the response...
                       if (coinbaseResponse(response, `API.coinbase.deposits.paymentMethod('${orders.deposit?.source}')`)) {
@@ -326,7 +326,7 @@ exports.dailyBuy = async function (req, res) {
                           type: LOG_TYPE.INFO,
                           message: `Deposit for ${currencyPrefix[(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)]}${deposit.amount} ${deposit.currency} from ${(orders.deposit?.source || DEFAULT.DEPOSIT.SOURCE)} successful.`,
                           data: response
-                        });                        
+                        });
                       }
                     } else { // No payment method
                       logger.log({
@@ -340,9 +340,9 @@ exports.dailyBuy = async function (req, res) {
 
                 // Wait until the funds are available
                 let counter = 5;
-                while(counter-- && await sleep(1000)){
+                while (counter-- && await sleep(1000)) {
                   if (coinbaseResponse(response = await API.coinbase.accounts(), 'API.coinbase.accounts()')) {
-                    if(response.find(({ currency }) => currency == orders.deposit?.currency)?.available >= round(fills.amountToDeposit)) break;
+                    if (response.find(({ currency }) => currency == orders.deposit?.currency)?.available >= round(fills.amountToDeposit)) break;
                   }
                 }
 
@@ -363,8 +363,8 @@ exports.dailyBuy = async function (req, res) {
                       price: current.adjustedPrice
                     };
 
-                    response = (await API.coinbase.placeOrder(order));
-                    
+                    response = {};//(await API.coinbase.placeOrder(order));
+
                     const currency = (orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY);
                     const prefix = currencyPrefix[currency];
 
@@ -426,7 +426,7 @@ exports.dailyBuy = async function (req, res) {
     });
   }
 
-  context.res.set({'Access-Control-Allow-Origin': '*'});
+  context.res.set({ 'Access-Control-Allow-Origin': '*' });
   context.status = context.status || 200;
   context.res.status(context.status).json({
     log: logger.get()
@@ -481,7 +481,7 @@ exports.cryptoStats = async function (req, res) {
             if (products.find(product => product == fill.product)) {
               // Add the fill to the full list of fills. Will be combined
               // with other fill sources later.
-              (info[fill.product]?.fills || (info[fill.product] = {fills:[]}).fills).push(fill);
+              (info[fill.product]?.fills || (info[fill.product] = { fills: [] }).fills).push(fill);
             }
           });
         }
@@ -492,16 +492,16 @@ exports.cryptoStats = async function (req, res) {
         // Get all coinbase fills for this product
         let coinbaseFills = (await API.coinbase.fills(product));
 
-        if(Array.isArray(coinbaseFills)){
+        if (Array.isArray(coinbaseFills)) {
           coinbaseFills.forEach(fill => {
-            (info[fill.product_id]?.fills || (info[fill.product_id] = {fills:[]}).fills).push(fill);
+            (info[fill.product_id]?.fills || (info[fill.product_id] = { fills: [] }).fills).push(fill);
           });
         }
 
         // Reference to the current product fills.
         const current = info[product];
 
-        if(!current?.fills?.length) continue;
+        if (!current?.fills?.length) continue;
 
         // Get current coinbase product info
         current.product = (await API.coinbase.products(product));
@@ -560,7 +560,7 @@ exports.cryptoStats = async function (req, res) {
     });
   }
 
-  context.res.set({'Access-Control-Allow-Origin': '*'});
+  context.res.set({ 'Access-Control-Allow-Origin': '*' });
   context.status = context.status || 200;
   context.res.status(context.status).json({
     log: logger.get(),

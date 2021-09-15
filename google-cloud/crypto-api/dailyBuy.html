@@ -1,0 +1,89 @@
+<html>
+  <head>
+
+    <style type="text/css">
+      * {margin: 0; padding: 0;}
+ 
+      div {
+        margin: 20px;
+      }
+        
+      ul {
+        list-style-type: none;
+        width: 100%;
+      }
+        
+      h3 {
+        font: bold 20px/1.5 Helvetica, Verdana, sans-serif;
+      }
+        
+      li img {
+        float: left;
+        margin: 0 15px 0 0;
+      }
+        
+      li p {
+        font: 200 12px/1.5 Georgia, Times New Roman, serif;
+      }
+        
+      li {
+        padding: 3px;
+        overflow: auto;
+        font: 14px/1.5 Helvetica, Verdana, sans-serif;
+      }
+        
+      li:hover {
+        background: #eee;
+        cursor: pointer;
+      }
+    </style>
+
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      var log = [
+        {
+          "logType": "ERROR", "message": "Purchase amount 0.0000151 is too small for BTC-USD. Minimum amount is 0.0001", "data": { "amount": 0.0000151, "product": { "id": "BTC-USD", "base_currency": "BTC", "quote_currency": "USD", "base_min_size": "0.0001", "base_max_size": "280", "quote_increment": "0.01", "base_increment": "0.00000001", "display_name": "BTC/USD", "min_market_funds": "5", "max_market_funds": "5000000", "margin_enabled": false, "fx_stablecoin": false, "max_slippage_percentage": "0.10000000", "post_only": false, "limit_only": false, "cancel_only": false, "trading_disabled": false, "status": "online", "status_message": "" } }
+        },
+        {
+          "logType": "ERROR", "message": "Purchase amount 0.006 is too small for SOL-USD. Minimum amount is 0.01", "data": { "amount": 0.006, "product": { "id": "SOL-USD", "base_currency": "SOL", "quote_currency": "USD", "base_min_size": "0.01", "base_max_size": "6000", "quote_increment": "0.001", "base_increment": "0.001", "display_name": "SOL/USD", "min_market_funds": "5.0", "max_market_funds": "200000", "margin_enabled": false, "fx_stablecoin": false, "max_slippage_percentage": "0.10000000", "post_only": false, "limit_only": false, "cancel_only": false, "trading_disabled": false, "status": "online", "status_message": "" } }
+        },
+        {
+          "logType": "ERROR", "message": "Purchase amount 0 is too small for ALGO-USD. Minimum amount is 1", "data": { "amount": 0, "product": { "id": "ALGO-USD", "base_currency": "ALGO", "quote_currency": "USD", "base_min_size": "1", "base_max_size": "500000", "quote_increment": "0.0001", "base_increment": "1", "display_name": "ALGO/USD", "min_market_funds": "10", "max_market_funds": "200000", "margin_enabled": false, "fx_stablecoin": false, "max_slippage_percentage": "0.10000000", "post_only": false, "limit_only": false, "cancel_only": false, "trading_disabled": false, "status": "online", "status_message": "" } }
+        },
+        {
+          "logType": "ERROR", "message": "Purchase amount 0.11 is too small for ADA-USD. Minimum amount is 1", "data": { "amount": 0.11, "product": { "id": "ADA-USD", "base_currency": "ADA", "quote_currency": "USD", "base_min_size": "1", "base_max_size": "250000", "quote_increment": "0.0001", "base_increment": "0.01", "display_name": "ADA/USD", "min_market_funds": "5.0", "max_market_funds": "500000", "margin_enabled": false, "fx_stablecoin": false, "max_slippage_percentage": "0.10000000", "post_only": false, "limit_only": false, "cancel_only": false, "trading_disabled": false, "status": "online", "status_message": "" } }
+        },
+        {
+          "logType": "ERROR", "message": "Purchase amount 0.00835357 is too small for LTC-USD. Minimum amount is 0.01", "data": { "amount": 0.00835357, "product": { "id": "LTC-USD", "base_currency": "LTC", "quote_currency": "USD", "base_min_size": "0.01", "base_max_size": "4000", "quote_increment": "0.01", "base_increment": "0.00000001", "display_name": "LTC/USD", "min_market_funds": "10", "max_market_funds": "500000", "margin_enabled": false, "fx_stablecoin": false, "max_slippage_percentage": "0.10000000", "post_only": false, "limit_only": false, "cancel_only": false, "trading_disabled": false, "status": "online", "status_message": "" } }
+        },
+        {
+          "logType": "ERROR", "message": "Purchase amount 0.00311353 is too small for BCH-USD. Minimum amount is 0.01", "data": { "amount": 0.00311353, "product": { "id": "BCH-USD", "base_currency": "BCH", "quote_currency": "USD", "base_min_size": "0.01", "base_max_size": "700", "quote_increment": "0.01", "base_increment": "0.00000001", "display_name": "BCH/USD", "min_market_funds": "10", "max_market_funds": "500000", "margin_enabled": false, "fx_stablecoin": false, "max_slippage_percentage": "0.10000000", "post_only": false, "limit_only": false, "cancel_only": false, "trading_disabled": false, "status": "online", "status_message": "" } }
+        },
+        {
+          "logType": "INFO", "message": "Account already has $11.66 USD available, no need to deposit additional funds.", "data": { "id": "d6f4414d-cd89-4bf7-85eb-a84e65cc07ce", "currency": "USD", "balance": "11.6618785993035000", "hold": "0.0000000000000000", "available": "11.6618785993035", "profile_id": "1b79c19b-0541-42e2-baa9-406effbb1fa6", "trading_enabled": true }
+        },
+        {
+          "logType": "INFO", "message": "Spent $3.54 USD on ETH-USD (limit buy order for 0.00100197 at price $3537.09 USD)", "data": {}
+        },
+        {
+          "logType": "INFO", "message": "Spent $0.37 USD on DOT-USD (limit buy order for 0.01 at price $36.59 USD)", "data": {}
+        }
+      ];
+    
+      $(document).ready(()=>{
+        const $ul = $('<ul>', { class: "mylist" }).append(
+          log
+          .sort((a,b) => a.logType == 'INFO' ? b.logType == 'INFO' ? 0 : -1 : 1)
+          .map(entry => $("<li>").append($("<a>").text(`${entry.logType == 'ERROR' ? '⚠' : '☑'} - ${entry.message}`)).append($("<hr>")))
+        );
+
+        $('body').append($ul);
+      });
+    
+    </script>
+</head>
+<body>  
+  <div id="content"></div>
+</body>
+</html>

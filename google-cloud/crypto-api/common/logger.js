@@ -34,6 +34,18 @@ class Logger {
   get() {
     return this.content;
   }
+
+  /**
+   * Accessor to get the content array containing log entries.
+   * 
+   * @returns {Array}
+   *  Array containing all the log entries so far.
+   */
+  html() {
+    
+
+    
+  }
 }
 
 module.exports = {
