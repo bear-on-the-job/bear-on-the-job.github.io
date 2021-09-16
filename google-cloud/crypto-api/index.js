@@ -325,7 +325,7 @@ exports.dailyBuy = async function (req, res) {
                       if (coinbaseResponse(response, `API.coinbase.deposits.paymentMethod('${orders.deposit?.source}')`)) {
                         logger.log({
                           type: LOG_TYPE.INFO,
-                          message: `Deposit for ${prefix}${deposit.amount} ${deposit.currency} from ${(orders.deposit?.source || DEFAULT.DEPOSIT.SOURCE)} successful.`,
+                          message: `Deposit for ${prefix}${deposit.amount.toFixed(2)} ${deposit.currency} from ${(orders.deposit?.source || DEFAULT.DEPOSIT.SOURCE)} successful.`,
                           data: response
                         });
                       }
@@ -382,7 +382,7 @@ exports.dailyBuy = async function (req, res) {
             } else { // Invalid amount to deposit
               logger.log({
                 type: LOG_TYPE.ERROR,
-                message: `Invalid amount to deposit (${prefix}${fills.amountToDeposit} ${currency}).`,
+                message: `Invalid amount to deposit (${prefix}${fills.amountToDeposit.toFixed(2)} ${currency}).`,
                 data: {
                   amount: fills.amountToDeposit,
                   deposit: orders?.deposit
@@ -392,7 +392,7 @@ exports.dailyBuy = async function (req, res) {
           } else {
             logger.log({
               type: LOG_TYPE.ERROR,
-              message: `Calculated amount to deposit (${prefix}${fills.amountToDeposit} ${currency}) is too high.`,
+              message: `Calculated amount to deposit (${prefix}${fills.amountToDeposit.toFixed(2)} ${currency}) is too high.`,
               data: account
             });
           }
@@ -428,10 +428,10 @@ exports.dailyBuy = async function (req, res) {
   context.status = context.status || 200;
   context.res.status(context.status).json({
     log: logger.get(),
-    summary: 
-      `Order summary:\\n` +
-      ` - Total spent: ${prefix}${round(orders.products.reduce((total, {product}) => total + ((fills[product]?.amountToBuy || 0) * (fills[product]?.adjustedPrice || 0)), 0)).toFixed(2)} ${currency}\\n` +
-      ` - Total deposited: ${prefix}${round(fills.amountToDeposit).toFixed(2)} ${currency}\\n`
+    summary: {
+      spent: `${prefix}${round(orders.products.reduce((total, {product}) => total + ((fills[product]?.amountToBuy || 0) * (fills[product]?.adjustedPrice || 0)), 0)).toFixed(2)} ${currency}`,
+      deposited: `${prefix}${round(fills.amountToDeposit).toFixed(2)} ${currency}`
+    }
   });
 
   context.res.end();
