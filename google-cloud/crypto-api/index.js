@@ -319,7 +319,7 @@ exports.dailyBuy = async function (req, res) {
                         currency: (orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)
                       };
 
-                      response = {};//(await API.coinbase.deposits.paymentMethod(deposit));
+                      response = (await API.coinbase.deposits.paymentMethod(deposit));
 
                       // Check the response...
                       if (coinbaseResponse(response, `API.coinbase.deposits.paymentMethod('${orders.deposit?.source}')`)) {
@@ -364,7 +364,7 @@ exports.dailyBuy = async function (req, res) {
                       price: current.adjustedPrice
                     };
 
-                    response = {};//(await API.coinbase.placeOrder(order));
+                    response = (await API.coinbase.placeOrder(order));
 
                     // Check the response...
                     if (coinbaseResponse(response, `API.coinbase.placeOrder('${product})'`)) {
