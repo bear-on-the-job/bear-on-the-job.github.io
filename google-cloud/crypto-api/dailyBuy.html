@@ -124,6 +124,8 @@
             canvas.height = img[0].height;
             const ctx = canvas.getContext("2d");
             ctx.drawImage(img[0], 0, 0);
+            canvas.width = 64;
+            canvas.height = 64;
             resolve(canvas.toDataURL("image/png"));
           });
           img.attr('src', src);          
@@ -154,6 +156,12 @@
 
         $('body').append($ul);
       });
+
+      (async () => {
+        for(const entry of log) {
+          entry.img = await getBase64Image(`../../images/${iconMap[entry.message.match(/[A-Z]{3,4}-[A-Z]{3}/g)?.[0] ?? 'default'] ?? iconMap.default}-logo.png`);
+        }
+      })();
     
     </script>
 </head>
