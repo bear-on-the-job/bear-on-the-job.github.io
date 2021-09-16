@@ -36,6 +36,13 @@
         background: #eee;
         cursor: pointer;
       }
+
+      li.red {
+        background: rgb(255, 196, 196);
+      }
+      li.green {
+        background: rgb(190, 248, 185);
+      }
     </style>
 
 
@@ -75,7 +82,7 @@
         const $ul = $('<ul>', { class: "mylist" }).append(
           log
           .sort((a,b) => a.logType == 'INFO' ? b.logType == 'INFO' ? 0 : -1 : 1)
-          .map(entry => $("<li>").append($("<a>").text(`${entry.logType == 'ERROR' ? '⚠' : '☑'} - ${entry.message}`)).append($("<hr>")))
+          .map(entry => $("<li>").append($("<a>").text(`${entry.logType == 'ERROR' ? '' : ''}${entry.message}`)).append($("<hr>")).addClass(entry.logType == 'ERROR' ? 'red' : 'green'))
         );
 
         $('body').append($ul);
