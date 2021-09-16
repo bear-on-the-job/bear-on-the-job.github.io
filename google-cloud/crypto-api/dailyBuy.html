@@ -101,6 +101,7 @@
       async function getBase64Image(src) {
         return new Promise(resolve => {
           const img = $('<img>');
+          img[0].crossOrigin = 'Anonymous';
           img.on('load', () => {
             const canvas = document.createElement("canvas");
             canvas.width = img[0].width;
