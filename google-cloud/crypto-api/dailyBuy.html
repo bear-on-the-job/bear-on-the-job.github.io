@@ -27,7 +27,7 @@
       }
         
       li {
-        padding: 3px;
+        padding: 0 20px;
         overflow: auto;
         font: 30px/1.5 Helvetica, Verdana, sans-serif;
         border-bottom: #000 2px solid;
@@ -39,14 +39,10 @@
       }
 
       li.red {
-        background: rgb(255, 196, 196);
+        background: rgb(182, 143, 138);
       }
       li.green {
-        background: rgb(190, 248, 185);
-      }
-
-      body {
-        background: #000;
+        background: rgb(211, 245, 195);
       }
     </style>
 
@@ -128,9 +124,8 @@
           img.attr('src', src);          
         });        
       }
-
-      var base64 = getBase64Image(document.getElementById("imageid"));
     
+      /*
       $(document).ready(()=>{
         const $ul = $('<ul>', { class: "mylist" }).append(
           log
@@ -147,6 +142,7 @@
 
         $('body').append($ul);
       });
+      */
 
       /*
       (async () => {
@@ -159,5 +155,21 @@
     </script>
 </head>
 <body>
+  <script>
+    const $ul = $('<ul>', { class: "mylist" }).append(
+      log
+      .sort((a,b) => a.logType == 'INFO' ? b.logType == 'INFO' ? 0 : -1 : 1)
+      .map((entry) => 
+        $("<li>")
+          .append($('<img>')
+            .attr('src', iconData[entry.message.match(/[A-Z]{3,4}-[A-Z]{3}/g)?.[0] ?? 'default'] ?? iconData.default)
+            .attr('width',64))
+          .append($("<a>")
+            .text(entry.message))
+            .addClass(entry.logType == 'ERROR' ? 'red' : 'green'))
+    );
+
+    $('body').append($ul);
+  </script>
 </body>
 </html>
