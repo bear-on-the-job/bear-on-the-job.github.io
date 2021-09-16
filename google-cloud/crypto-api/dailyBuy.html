@@ -88,6 +88,7 @@
         default: 'usd-coin-usdc',
         "BTC-USD": "bitcoin-btc",
         "ETH-USD": "ethereum-eth",
+        /*
         "ADA-USD": "cardano-ada",
         "DOT-USD": "polkadot-new-dot",
         "SOL-USD": "solana-sol",
@@ -96,6 +97,7 @@
         "TRX-USD": "tron-trx",
         "LTC-USD": "litecoin-ltc",
         "BCH-USD": "bitcoin-cash-bch"
+        */
       };
 
       function getBase64Image(src) {
@@ -118,7 +120,7 @@
     
       $(document).ready(async ()=>{
         for(const entry of log) {
-          entry.img = await getBase64Image(`../../images/${iconMap[entry.message.match(/[A-Z]{3,4}-[A-Z]{3}/g)?.[0] ?? 'default']}-logo.png`);
+          entry.img = await getBase64Image(`../../images/${iconMap[entry.message.match(/[A-Z]{3,4}-[A-Z]{3}/g)?.[0] ?? 'default'] ?? iconMap.default}-logo.png`);
         }
 
         const $ul = $('<ul>', { class: "mylist" }).append(
