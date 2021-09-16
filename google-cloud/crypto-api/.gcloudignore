@@ -14,3 +14,8 @@
 .gitignore
 
 node_modules
+dailyBuy.html
+.vscode
+css
+js
+stats
