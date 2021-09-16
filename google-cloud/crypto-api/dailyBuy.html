@@ -98,10 +98,10 @@
         "BCH-USD": "bitcoin-cash-bch"
       };
 
-      async function getBase64Image(src) {
+      function getBase64Image(src) {
         return new Promise(resolve => {
           const img = $('<img>');
-          img[0].crossOrigin = 'Anonymous';
+          img[0].crossOrigin = 'anonymous';
           img.on('load', () => {
             const canvas = document.createElement("canvas");
             canvas.width = img[0].width;
@@ -117,13 +117,17 @@
       var base64 = getBase64Image(document.getElementById("imageid"));
     
       $(document).ready(async ()=>{
+        for(const entry of log) {
+          entry.img = await getBase64Image(`../../images/${iconMap[entry.message.match(/[A-Z]{3,4}-[A-Z]{3}/g)?.[0] ?? 'default']}-logo.png`);
+        }
+
         const $ul = $('<ul>', { class: "mylist" }).append(
           log
           .sort((a,b) => a.logType == 'INFO' ? b.logType == 'INFO' ? 0 : -1 : 1)
-          .map(async (entry) => 
+          .map((entry) => 
             $("<li>")
               .append($('<img>')
-                .attr('src', await getBase64Image(`../../images/${iconMap[entry.message.match(/[A-Z]{3,4}-[A-Z]{3}/g)?.[0] ?? 'default']}-logo.png`))
+                .attr('src', entry.img)
                 .attr('width',64))
               .append($("<a>")
                 .text(entry.message))
