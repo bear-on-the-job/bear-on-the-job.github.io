@@ -19,7 +19,7 @@
         
       li img {
         float: left;
-        margin: 0 15px 0 0;
+        margin: 10px 15px 5px 5px;
       }
         
       li p {
@@ -30,6 +30,7 @@
         padding: 3px;
         overflow: auto;
         font: 30px/1.5 Helvetica, Verdana, sans-serif;
+        border-bottom: #000 2px solid;
       }
         
       li:hover {
@@ -42,6 +43,10 @@
       }
       li.green {
         background: rgb(190, 248, 185);
+      }
+
+      body {
+        background: #000;
       }
     </style>
 
@@ -77,12 +82,27 @@
           "logType": "INFO", "message": "Spent $0.37 USD on DOT-USD (limit buy order for 0.01 at price $36.59 USD)", "data": {}
         }
       ];
+
+
+      const iconMap = {
+        default: 'usd-coin-usdc',
+        "BTC-USD": "bitcoin-btc",
+        "ETH-USD": "ethereum-eth",
+        "ADA-USD": "cardano-ada",
+        "DOT-USD": "polkadot-new-dot",
+        "SOL-USD": "solana-sol",
+        "ALGO-USD": "algorand-algo",
+        "DOGE-USD": "dogecoin-doge",
+        "TRX-USD": "tron-trx",
+        "LTC-USD": "litecoin-ltc",
+        "BCH-USD": "bitcoin-cash-bch"
+      };
     
       $(document).ready(()=>{
         const $ul = $('<ul>', { class: "mylist" }).append(
           log
           .sort((a,b) => a.logType == 'INFO' ? b.logType == 'INFO' ? 0 : -1 : 1)
-          .map(entry => $("<li>").append($("<a>").text(`${entry.logType == 'ERROR' ? '' : ''}${entry.message}`)).append($("<hr>")).addClass(entry.logType == 'ERROR' ? 'red' : 'green'))
+          .map(entry => $("<li>").append($('<img>').attr('src', `https://cryptologos.cc/logos/${iconMap[entry.message.match(/[A-Z]{3,4}-[A-Z]{3}/g)?.[0] ?? 'default']}-logo.png?v=013`).attr('width',64)).append($("<a>").text(entry.message)).addClass(entry.logType == 'ERROR' ? 'red' : 'green'))
         );
 
         $('body').append($ul);
@@ -92,5 +112,6 @@
 </head>
 <body>  
   <div id="content"></div>
+  <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=013" width="32"/>
 </body>
 </html>
