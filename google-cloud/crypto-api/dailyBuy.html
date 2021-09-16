@@ -97,12 +97,36 @@
         "LTC-USD": "litecoin-ltc",
         "BCH-USD": "bitcoin-cash-bch"
       };
+
+      async function getBase64Image(src) {
+        return new Promise(resolve => {
+          const img = $('<img>');
+          img.on('load', () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = img[0].width;
+            canvas.height = img[0].height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img[0], 0, 0);
+            resolve(canvas.toDataURL("image/png"));
+          });
+          img.attr('src', src);          
+        });        
+      }
+
+      var base64 = getBase64Image(document.getElementById("imageid"));
     
-      $(document).ready(()=>{
+      $(document).ready(async ()=>{
         const $ul = $('<ul>', { class: "mylist" }).append(
           log
           .sort((a,b) => a.logType == 'INFO' ? b.logType == 'INFO' ? 0 : -1 : 1)
-          .map(entry => $("<li>").append($('<img>').attr('src', `https://cryptologos.cc/logos/${iconMap[entry.message.match(/[A-Z]{3,4}-[A-Z]{3}/g)?.[0] ?? 'default']}-logo.png?v=013`).attr('width',64)).append($("<a>").text(entry.message)).addClass(entry.logType == 'ERROR' ? 'red' : 'green'))
+          .map(async (entry) => 
+            $("<li>")
+              .append($('<img>')
+                .attr('src', await getBase64Image(`https://cryptologos.cc/logos/${iconMap[entry.message.match(/[A-Z]{3,4}-[A-Z]{3}/g)?.[0] ?? 'default']}-logo.png?v=013`))
+                .attr('width',64))
+              .append($("<a>")
+                .text(entry.message))
+                .addClass(entry.logType == 'ERROR' ? 'red' : 'green'))
         );
 
         $('body').append($ul);
