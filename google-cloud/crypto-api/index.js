@@ -125,18 +125,22 @@ exports.dailyBuy = async function (req, res) {
 
   const logger = new Logger();
 
+  // Helper variables
+  const currency = (orders?.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY);
+  const prefix = currencyPrefix[currency];
+
+  // Initialize the fills object, which will be used to track calculations
+  // and amounts for products.
+  const fills = {
+    totalWeight: 0,
+    amountToDeposit: 0
+  };
+
   try {
     // Check all required params are available
     if (coinbase?.key && coinbase?.passphrase && coinbase?.secret) {
       // Everything is at least available, attempt the workflow.
       API.coinbase.init(coinbase.key, coinbase.passphrase, coinbase.secret);
-
-      // Initialize the fills object, which will be used to track calculations
-      // and amounts for products.
-      let fills = {
-        totalWeight: 0,
-        amountToDeposit: 0
-      };
 
       // Initialize a reusable response object, to collect data from API 
       // calls.
@@ -275,10 +279,7 @@ exports.dailyBuy = async function (req, res) {
           }
 
           // Increase deposit amount by 5% to cover slosh in orders
-          fills.amountToDeposit *= 1.05;
-          // Helper variables
-          const currency = (orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY);
-          const prefix = currencyPrefix[currency];
+          fills.amountToDeposit *= 1.05;          
 
           // Cap deposits at a max
           if (fills.amountToDeposit < (orders.deposit?.maximum || DEFAULT.DEPOSIT.MAXIMUM)) {
@@ -296,7 +297,7 @@ exports.dailyBuy = async function (req, res) {
                   fills.amountToDeposit = 0;
                   logger.log({
                     type: LOG_TYPE.INFO,
-                    message: `Account already has ${currencyPrefix[account?.currency]}${round(account?.available, 0.01)} ${account?.currency} available, no need to deposit additional funds.`,
+                    message: `Account already has ${currencyPrefix[account?.currency]}${round(account?.available, 0.01).toFixed(2)} ${account?.currency} available, no need to deposit additional funds.`,
                     data: account
                   });
                 } else {
@@ -324,7 +325,7 @@ exports.dailyBuy = async function (req, res) {
                       if (coinbaseResponse(response, `API.coinbase.deposits.paymentMethod('${orders.deposit?.source}')`)) {
                         logger.log({
                           type: LOG_TYPE.INFO,
-                          message: `Deposit for ${currencyPrefix[(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)]}${deposit.amount} ${deposit.currency} from ${(orders.deposit?.source || DEFAULT.DEPOSIT.SOURCE)} successful.`,
+                          message: `Deposit for ${prefix}${deposit.amount} ${deposit.currency} from ${(orders.deposit?.source || DEFAULT.DEPOSIT.SOURCE)} successful.`,
                           data: response
                         });
                       }
@@ -365,16 +366,13 @@ exports.dailyBuy = async function (req, res) {
 
                     response = {};//(await API.coinbase.placeOrder(order));
 
-                    const currency = (orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY);
-                    const prefix = currencyPrefix[currency];
-
                     // Check the response...
                     if (coinbaseResponse(response, `API.coinbase.placeOrder('${product})'`)) {
                       // Success, add the information to the log.
                       logger.log({
                         type: LOG_TYPE.INFO,
                         //message: `Placed ${order.type} ${order.side} order for ${order.size} ${order.product_id} at price ${currencyPrefix[(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)]}${round(order.price, 0.01)} ${(orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)}.`,
-                        message: `Spent ${prefix}${round(order.size * order.price)} ${currency} on ${product} (${order.type} ${order.side} order for ${order.size} at price ${prefix}${round(order.price)} ${currency})`,
+                        message: `Spent ${prefix}${round(order.size * order.price).toFixed(2)} ${currency} on ${product} (${order.type} ${order.side} order for ${order.size} at price ${prefix}${round(order.price).toFixed(2)} ${currency})`,
                         data: response
                       });
                     }
@@ -429,7 +427,11 @@ exports.dailyBuy = async function (req, res) {
   context.res.set({ 'Access-Control-Allow-Origin': '*' });
   context.status = context.status || 200;
   context.res.status(context.status).json({
-    log: logger.get()
+    log: logger.get(),
+    summary: 
+      `Order summary:\\n` +
+      ` - Total spent: ${prefix}${round(orders.products.reduce((total, {product}) => total + ((fills[product]?.amountToBuy || 0) * (fills[product]?.adjustedPrice || 0)), 0)).toFixed(2)} ${currency}\\n` +
+      ` - Total deposited: ${prefix}${round(fills.amountToDeposit).toFixed(2)} ${currency}\\n`
   });
 
   context.res.end();
