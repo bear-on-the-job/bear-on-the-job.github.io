@@ -21,10 +21,6 @@
     },
     {
       "product": "SOL-USD",
-      "weight": 3
-    },
-    {
-      "product": "ALGO-USD",
       "weight": 2
     },
     {
@@ -34,6 +30,10 @@
     {
       "product": "ADA-USD",
       "weight": 2
+    },    
+    {
+      "product": "ALGO-USD",
+      "weight": 1
     },   
     {
       "product": "LTC-USD",
