@@ -15,24 +15,13 @@
   <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-theme-alpine.css">
   <style media="only screen">
     html, body {
-        height: 100%;
-        width: 100%;
-        margin: 0;
-        box-sizing: border-box;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    html {
-        position: absolute;
-        top: 0;
-        left: 0;
-        padding: 0;
-        overflow: auto;
+      height: 100%;
+      width: 100%;
+      margin: 0;
     }
 
     body {
-        padding: 1rem;
-        overflow: auto;
+      overflow: auto;
     }
 
     .rag-red {
@@ -44,6 +33,14 @@
     .align-right {
       margin-left: auto; 
       margin-right: 0;
+    }
+
+    div.ag-theme-alpine div.ag-row {
+      font-size: 24px !important;
+    }
+
+    div.ag-theme-alpine div.ag-header-row {
+      font-size: 30px !important;
     }
 </style>
   <script>
@@ -59,7 +56,7 @@
      *  Rounded value as a float.
      */
     function round(value) {
-      const minUnit = value < 0.1 ? 0.0001 : 0.01;
+      const minUnit = value < 1 && value > -1 ? 0.0001 : 0.01;
       const inverse = 1 / parseFloat(minUnit);
       const inverseLog = Math.log10(inverse);
       return parseFloat(value).toFixed(inverseLog);
@@ -141,16 +138,21 @@
 
       $(document).ready(()=>{
         const gridOptions = {
-          onGridReady: params => params.api.sizeColumnsToFit(),
+          onGridReady: params => {
+            params.api.sizeColumnsToFit();
+          },
+          defaultColDef: {
+              resizable: true,
+              type: 'rightAligned'
+          },
           columnDefs: [
-            { field: 'Product', type: 'rightAligned', resizable: true },
-            { field: 'Cost', type: 'rightAligned', resizable: true },
-            { field: 'Value', type: 'rightAligned', resizable: true },
-            { field: 'Avg Cost', type: 'rightAligned', resizable: true },
-            { field: 'Price', type: 'rightAligned', resizable: true },
+            { field: 'Product'},
+            { field: 'Cost'},
+            { field: 'Value'},
+            { field: 'Avg Cost'},
+            { field: 'Price'},
             { 
               field: '% Gain',
-              type: 'rightAligned',
               cellStyle: params => params.value < 0 ? { color: 'red' } : { color: 'green' }
             }
           ],
@@ -186,10 +188,11 @@
               type: 'pie',
               title: {
                 text: `Current Value: $${round(response.data.currentValue)}`,
+                fontSize: 20
               },
               labelKey: 'Product',
               angleKey: 'Value',
-              innerRadiusOffset: -40,
+              innerRadiusOffset: -70,
               label: {
                 enabled: false
               },
@@ -205,11 +208,12 @@
               type: 'pie',
               title: {
                 text: `Total Cost: $${round(response.data.totalCost)}`,
+                fontSize: 20
               },
               labelKey: 'Product',
               angleKey: 'Cost',
-              outerRadiusOffset: -100,
-              innerRadiusOffset: -140,
+              outerRadiusOffset: -140,
+              innerRadiusOffset: -210,
               label: {
                 enabled: false
               },
@@ -235,8 +239,8 @@
     
   </script>
   <body style="background-color:#333333; color: #CCCCCC;">
-    <div id="chart" class="ag-theme-alpine" style="height: 400px;"></div>
-    <div id="grid" class="ag-theme-alpine"></div>
+    <div id="chart" class="ag-theme-alpine" style="height: 600px; width: 100%;"></div>
+    <div id="grid" class="ag-theme-alpine" style="height: 100%; width: 100%;"></div>
   </body>
   </html>
   
