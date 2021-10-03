@@ -428,9 +428,9 @@ exports.dailyBuy = async function (req, res) {
   context.status = context.status || 200;
   context.res.status(context.status).json({
     log: logger.get(),
-    summary: {
-      spent: `${prefix}${round(orders.products.reduce((total, {product}) => total + ((fills[product]?.amountToBuy || 0) * (fills[product]?.adjustedPrice || 0)), 0)).toFixed(2)} ${currency}`,
-      deposited: `${prefix}${round(fills.amountToDeposit).toFixed(2)} ${currency}`
+    summary: context.status != 200 ? null : {
+      spent: `${prefix}${round(orders?.products?.reduce((total, {product}) => total + ((fills[product]?.amountToBuy || 0) * (fills[product]?.adjustedPrice || 0)), 0)).toFixed(2)} ${currency}`,
+      deposited: `${prefix}${round(fills?.amountToDeposit).toFixed(2)} ${currency}`
     }
   });
 
