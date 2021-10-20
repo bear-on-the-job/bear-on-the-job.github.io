@@ -191,13 +191,11 @@ exports.dailyBuy = async function (req, res) {
             // Calculate total amount bought
             current.totalAmount = current
               ?.filter((fill) => /buy/i.test(fill.side))
-              ?.reduce((total, fill) => {
-                return Number(total) + Number(fill.size);
-              }, 0);
+              ?.reduce((total, fill) => Number(total) + (Number(fill.size)), 0);
             // Calculate total cost for this product
             current.totalCost = current
               ?.filter((fill) => /buy/i.test(fill.side))
-              ?.reduce((total, fill) => Number(total) + (Number(fill.price) * Number(fill.size)), 0);
+              ?.reduce((total, fill) => Number(total) + (Number(fill.size) * Number(fill.price)), 0);
             // Calculate average price per unit of this product
             current.averageCost = current.totalCost / current.totalAmount;
 
@@ -511,14 +509,12 @@ exports.cryptoStats = async function (req, res) {
 
         // Calculate total amount bought
         current.totalAmount = current.fills
-          ?.filter((fill) => /buy/i.test(fill.side))
-          ?.reduce((total, fill) => {
-            return Number(total) + Number(fill.size);
-          }, 0);
+          ?.filter((fill) => /(buy|sell)/i.test(fill.side))
+          ?.reduce((total, fill) => Number(total) + (/(buy)/i.test(fill.side) ? 1 : -1) * Number(fill.size), 0);
         // Calculate total cost for this product
         current.totalCost = current.fills
-          ?.filter((fill) => /buy/i.test(fill.side))
-          ?.reduce((total, fill) => Number(total) + (Number(fill.price) * Number(fill.size)), 0);
+          ?.filter((fill) => /(buy|sell)/i.test(fill.side))
+          ?.reduce((total, fill) => Number(total) + (/(buy)/i.test(fill.side) ? 1 : -1) * Number(fill.size) * Number(fill.price), 0);
         // Calculate average price per unit of this product
         current.averageCost = current.totalCost / current.totalAmount;
 
