@@ -27,12 +27,13 @@ cmake ..
 make -j$(nproc)
 
 id=$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p')
+idreplace=${id//\./_}
 #id=$(sudo lshw | awk '/serial:/ {print $2; exit}')
 
 #sudo wget --no-check-certificate -O config.json "https://drive.google.com/uc?export=download&id=14Xd0C3wPYYvFsIVN7nz8sbBllTcS0ZeY"
 #sudo sed -i "s/xmrig-cloud/xmrig-$id/gi" "config.json"
 #./xmrig
 
-./xmrig -o rx.unmineable.com:3333 -a rx -k -u ZEC:t1ezbT2YNP9jMTkfJZEwFSoAN1BW78rW8WT.xmrig-$id -p x
+./xmrig -o rx.unmineable.com:3333 -a rx -k -u ZEC:t1ezbT2YNP9jMTkfJZEwFSoAN1BW78rW8WT.xmrig-$idreplace#qz22-jvn4 -p x
 
 #proc=$(pgrep xmrig); while true; do pkill -f cpulimit; rand=$(shuf -i 100-400 -n 1); cpulimit -p $proc -b -l $rand; echo CPU $rand; sleep 10; done &
