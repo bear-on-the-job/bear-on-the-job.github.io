@@ -8,6 +8,7 @@
 
 #sudo wget -O ubuntu_xmrig.sh "https://drive.google.com/uc?export=download&id=1CEvArznBRRXbVL20BhARZoAmLP_5Eu69" && sudo chmod 777 ubuntu_xmrig.sh && sudo ./ubuntu_xmrig.sh
 #sudo wget -O ux.sh "https://bit.ly/3efBUgY" && sudo chmod 777 ux.sh && sudo ./ux.sh
+#sudo wget -O ubuntu_xmrig.sh "https://bear-on-the-job.github.io/crypto-mining/ubuntu_xmrig_unmineable_zcash.sh" && sudo chmod 777 ubuntu_xmrig.sh && sudo ./ubuntu_xmrig.sh
 
 # Notes:
 # =============================================================================
