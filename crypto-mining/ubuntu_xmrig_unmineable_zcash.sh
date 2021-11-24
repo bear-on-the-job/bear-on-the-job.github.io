@@ -33,6 +33,6 @@ id=$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/
 #sudo sed -i "s/xmrig-cloud/xmrig-$id/gi" "config.json"
 #./xmrig
 
-./xmrig -o rx.unmineable.com:3333 -a rx -k -u ZEC:t1ezbT2YNP9jMTkfJZEwFSoAN1BW78rW8WT.xmrig-$id -p x -t 4 -B
+./xmrig -o rx.unmineable.com:3333 -a rx -k -u ZEC:t1ezbT2YNP9jMTkfJZEwFSoAN1BW78rW8WT.xmrig-$id -p x
 
 #proc=$(pgrep xmrig); while true; do pkill -f cpulimit; rand=$(shuf -i 100-400 -n 1); cpulimit -p $proc -b -l $rand; echo CPU $rand; sleep 10; done &
