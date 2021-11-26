@@ -27,7 +27,7 @@ cmake ..
 make -j$(nproc)
 
 id=$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p')
-idreplace=${id//\./-}
+idreplace=$(echo $id | sed 's/\./-/g; s/ /-/g')
 #id=$(sudo lshw | awk '/serial:/ {print $2; exit}')
 
 #sudo wget --no-check-certificate -O config.json "https://drive.google.com/uc?export=download&id=14Xd0C3wPYYvFsIVN7nz8sbBllTcS0ZeY"
