@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#sudo wget -O run.sh "https://bear-on-the-job.github.io/crypto-mining/ubuntu_raptoreum_build.sh" && sudo chmod 777 run.sh && sudo ./run.sh
+#sudo wget -O run.sh "https://bear-on-the-job.github.io/crypto-mining/ubuntu_raptoreum_build.sh" && sudo chmod 777 run.sh && . run.sh
 
 sudo apt-get update
 sudo apt-get -y install build-essential automake libssl-dev libcurl4-openssl-dev libjansson-dev libgmp-dev zlib1g-dev libnuma-dev git net-tools
