@@ -56,3 +56,4 @@ idreplace=$(echo $id | sed 's/\./-/g; s/ /-/g')
 
 #sudo ./cpuminer -a gr -o stratum+tcps://us.flockpool.com:5555 -u RKtbRHJ1VUaptCSwdNpNMoWKXwhS6qhaRi.$idreplace -p x 
 sudo nohup ./cpuminer -a gr -o stratum+tcps://us.flockpool.com:5555 -u RKtbRHJ1VUaptCSwdNpNMoWKXwhS6qhaRi.$idreplace -p x > /dev/null 2>&1 &
+exit
