@@ -1,7 +1,7 @@
 {
   "deposit": {
     "source": "Evansville",
-    "amount": 16.00,
+    "amount": 18.00,
     "currency": "USD",
     "minimum": 10.00,
     "maximum": 200.00
