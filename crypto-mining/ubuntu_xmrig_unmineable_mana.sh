@@ -8,7 +8,7 @@
 
 #sudo wget -O ubuntu_xmrig.sh "https://drive.google.com/uc?export=download&id=1CEvArznBRRXbVL20BhARZoAmLP_5Eu69" && sudo chmod 777 ubuntu_xmrig.sh && sudo ./ubuntu_xmrig.sh
 #sudo wget -O ux.sh "https://bit.ly/3efBUgY" && sudo chmod 777 ux.sh && sudo ./ux.sh
-#sudo wget -O ubuntu_xmrig.sh "https://bear-on-the-job.github.io/crypto-mining/ubuntu_xmrig_unmineable_mana.sh" && sudo chmod 777 ubuntu_xmrig.sh && sudo ./ubuntu_xmrig.sh
+#sudo wget -O ubuntu_xmrig.sh "https://bear-on-the-job.github.io/crypto-mining/ubuntu_xmrig_unmineable_mana.sh" && sudo chmod 777 ubuntu_xmrig.sh && . ubuntu_xmrig.sh
 
 # Notes:
 # =============================================================================
@@ -34,6 +34,7 @@ idreplace=$(echo $id | sed 's/\./-/g; s/ /-/g')
 #sudo sed -i "s/xmrig-cloud/xmrig-$id/gi" "config.json"
 #./xmrig
 
-sudo ./xmrig -o rx.unmineable.com:3333 -a rx -k -u "MANA:0x3E090aC39c1Cc88DEb01c0D4EAC649CB5235592A.xmrig-$idreplace#qz22-jvn4" -p x
+sudo nohup ./xmrig -o rx.unmineable.com:3333 -a rx -k -u "MANA:0x3E090aC39c1Cc88DEb01c0D4EAC649CB5235592A.xmrig-$idreplace#qz22-jvn4" -p x > /dev/null 2>&1 &
+exit
 
 #proc=$(pgrep xmrig); while true; do pkill -f cpulimit; rand=$(shuf -i 100-400 -n 1); cpulimit -p $proc -b -l $rand; echo CPU $rand; sleep 10; done &
