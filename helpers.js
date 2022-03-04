@@ -6,6 +6,6 @@ document.getElementsByTagName('head')[0].appendChild(jq);
 jQuery.noConflict();
 
 // Youtube TV click all the free stuff
-$("div.header:has(div.ytu-onboarding-offer-info:contains('free trial')) tp-yt-paper-checkbox").click()
+jQuery("div.header:has(div.ytu-onboarding-offer-info:contains('free trial')) tp-yt-paper-checkbox").click()
 
 //javascript:(function(e,s){e.src=s;e.onload=function(){jQuery.noConflict();console.log('jQuery injected')};document.head.appendChild(e);})(document.createElement('script'),'//code.jquery.com/jquery-latest.min.js')
