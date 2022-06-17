@@ -70,6 +70,7 @@ module.exports = {
       let data = '';
       let body = requestParams.body;
       let path = requestParams.path;
+      const requestData = requestParams?.body ? JSON.stringify(requestParams.body) : null;
       
       // Get current timestamp to be most accurate.
       const timestamp = Date.now() / 1000;
@@ -112,9 +113,8 @@ module.exports = {
         }
       };
 
-      if(/post/i.test(requestParams.method) && requestParams.body) {
-        requestParams.data = JSON.stringify(requestParams.body);
-        options.headers['Content-Length'] = requestParams.data.length;
+      if(/post/i.test(requestParams.method) && requestData) {
+        options.headers['Content-Length'] = requestData.length;
         options.headers['Content-Type'] = 'application/json';
       }
 
@@ -167,8 +167,8 @@ module.exports = {
         }
       });
       
-      if(requestParams.data) {
-        request.write(requestParams.data);
+      if(requestData) {
+        request.write(requestData);
       }
 
       request.end();
