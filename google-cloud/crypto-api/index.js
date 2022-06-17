@@ -249,40 +249,23 @@ exports.dailyBuy = async function (req, res) {
             // since last purchase, and the adjusted weight of the product.
             current.spendRatio = ((orders.deposit?.amount || DEFAULT.DEPOSIT.AMOUNT) * current.elapsed * (current.adjustedWeight / fills.totalWeight)) / scale;
 
-            // Check if the amount to spend would be too small for this product.
-            if (current.spendRatio < current.product?.min_market_funds) {
-              // Log an error, since we want to spend an amount that is
-              // too small, and the purchase would fail if we attempted.
-              logger.log({
-                type: LOG_TYPE.ERROR,
-                message: `Spend amount ${current.amountToBuy} ${account?.currency} is too small for ${product}. Minimum amount is ${current.product?.min_market_funds}`,
-                data: {
-                  spendRatio: current.spendRatio,
-                  minMarketFunds: current.product?.min_market_funds,
-                  product: current.product
-                }
-              });
-              // Reset amount to buy since we don't have enough
-              current.amountToBuy = null;
-              // Proceed without including this product in the total sum we
-              // intend to deposit.
-              continue;
-            }
+            // NOTE: base_increment is for the token currency (ex: BTC, ETH), quote_increment is for the fiat currentcy (ex: USD)
 
             // Calculate amount to buy, based on our desired spend amount, and 
             // current price of product.
             current.amountToBuy = round((current.spendRatio / current.stats?.last), current.product?.base_increment);
 
+            // NOTE: base_min_size is deprecated as of 2022.06.30 and will no longer be used. Check if it's available until then.
             // Check if the amount to buy would be too small for this product.
-            if (current.amountToBuy < current.product?.quote_increment) {
+            if (current.product?.base_min_size && current.amountToBuy < current.product.base_min_size) {
               // Log an error, since we want to buy an increment that is
               // too small, and the purchase would fail if we attempted.
               logger.log({
                 type: LOG_TYPE.ERROR,
-                message: `Purchase amount ${current.amountToBuy} is too small for ${product}. Minimum amount is ${current.product?.quote_increment}`,
+                message: `Purchase amount ${current.amountToBuy} is too small for ${product}. Minimum amount is ${current.product?.base_min_size}`,
                 data: {
                   amountToBuy: current.amountToBuy,
-                  quoteIncrement: current.product?.quote_increment,
+                  baseMinSize: current.product?.base_min_size,
                   product: current.product
                 }
               });
@@ -296,9 +279,33 @@ exports.dailyBuy = async function (req, res) {
             // Adjust the price so it is slightly above current price. This 
             // helps the limit order fill immediately.
             current.adjustedPrice = round((Number(current.stats?.last) + (Number(current.product?.quote_increment) * 20)), Number(current.product?.quote_increment));
+
+            // Determine the exact amount that will be spent for this product.
+            const amountToSpend = (current.amountToBuy * current.adjustedPrice);
+
+            // Check if the amount to spend would be too small for this product.
+            if (amountToSpend < current.product?.min_market_funds) {
+              // Log an error, since we want to spend an amount that is
+              // too small, and the purchase would fail if we attempted.
+              logger.log({
+                type: LOG_TYPE.ERROR,
+                message: `Spend amount ${currencyPrefix[currency]}${round(amountToSpend, Number(current.product?.quote_increment))} ${currency} is too small for ${product}. Minimum amount is ${currencyPrefix[currency]}${round(Number(current.product?.min_market_funds), Number(current.product?.quote_increment))}`,
+                data: {
+                  amountToSpend: amountToSpend,
+                  minMarketFunds: current.product?.min_market_funds,
+                  product: current.product
+                }
+              });
+              // Reset amount to buy since we don't have enough
+              current.amountToBuy = null;
+              // Proceed without including this product in the total sum we
+              // intend to deposit.
+              continue;
+            }
+
             // Accumulate the total amount we need to deposit to cover all of
             // the buys.
-            fills.amountToDeposit += (current.amountToBuy * current.adjustedPrice);
+            fills.amountToDeposit += amountToSpend;
           }
 
           // Increase deposit amount by 5% to cover slosh in orders
