@@ -248,19 +248,41 @@ exports.dailyBuy = async function (req, res) {
             // Calculate how much to spend on current product, based on time 
             // since last purchase, and the adjusted weight of the product.
             current.spendRatio = ((orders.deposit?.amount || DEFAULT.DEPOSIT.AMOUNT) * current.elapsed * (current.adjustedWeight / fills.totalWeight)) / scale;
+
+            // Check if the amount to spend would be too small for this product.
+            if (current.spendRatio < current.product?.min_market_funds) {
+              // Log an error, since we want to spend an amount that is
+              // too small, and the purchase would fail if we attempted.
+              logger.log({
+                type: LOG_TYPE.ERROR,
+                message: `Spend amount ${current.amountToBuy} ${account?.currency} is too small for ${product}. Minimum amount is ${current.product?.min_market_funds}`,
+                data: {
+                  spendRatio: current.spendRatio,
+                  minMarketFunds: current.product?.min_market_funds,
+                  product: current.product
+                }
+              });
+              // Reset amount to buy since we don't have enough
+              current.amountToBuy = null;
+              // Proceed without including this product in the total sum we
+              // intend to deposit.
+              continue;
+            }
+
             // Calculate amount to buy, based on our desired spend amount, and 
             // current price of product.
             current.amountToBuy = round((current.spendRatio / current.stats?.last), current.product?.base_increment);
 
             // Check if the amount to buy would be too small for this product.
-            if (current.amountToBuy < current.product?.base_min_size) {
+            if (current.amountToBuy < current.product?.quote_increment) {
               // Log an error, since we want to buy an increment that is
-              // too small, an the purchase would fail if we attempted.
+              // too small, and the purchase would fail if we attempted.
               logger.log({
                 type: LOG_TYPE.ERROR,
-                message: `Purchase amount ${current.amountToBuy} is too small for ${product}. Minimum amount is ${current.product?.base_min_size}`,
+                message: `Purchase amount ${current.amountToBuy} is too small for ${product}. Minimum amount is ${current.product?.quote_increment}`,
                 data: {
-                  amount: current.amountToBuy,
+                  amountToBuy: current.amountToBuy,
+                  quoteIncrement: current.product?.quote_increment,
                   product: current.product
                 }
               });
