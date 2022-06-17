@@ -74,7 +74,7 @@
         $("<li>", { class: entry.logType })
         .append(
           $('<img>')
-          .attr('src', iconData[entry.message.match(/[A-Z]{3,4}-[A-Z]{3}/g)?.[0] ?? 'default'] ?? iconData.default)
+          .attr('src', iconData[entry.message.match(/[A-Z]{3,4}-[A-Z]{3}/g)?.[0] || entry.data?.data?.requestParams?.body?.product_id || 'default'] || iconData.default)
           .attr('width',64)
           .attr('height',64)
         )
