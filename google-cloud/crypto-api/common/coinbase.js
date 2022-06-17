@@ -65,9 +65,18 @@ module.exports = {
   request: function (requestParams) { 
     return new Promise((resolve, reject) => {
       const api = this.api;
+
+      // Init variables to be used for the request.
+      let data = '';
+      let body = requestParams.body;
+      let path = requestParams.path;
+      
+      // Get current timestamp to be most accurate.
       const timestamp = Date.now() / 1000;
 
+      // Init attempt count if it doesn't exist.
       requestParams.attempt = requestParams.attempt || 1;
+      requestParams.response = requestParams.response || {};
 
       // If it is GET request, convert body to query params
       if(requestParams.method == 'GET' && requestParams.body && typeof requestParams.body === 'object'){
@@ -76,18 +85,18 @@ module.exports = {
         // Iterate all keys in the body object
         Object.keys(requestParams.body).forEach((key)=>{
           // Add the key=value pair to the path and continue
-          requestParams.path += `${separator}${(key)}=${(requestParams.body[key])}`;
+          path += `${separator}${(key)}=${(requestParams.body[key])}`;
           // After the first key=value pair, swap the separator for additional params
           separator = '&';
         });
         // Set the body to null, since all keys have been converted (don't want to reprocess them when signing the message)
-        requestParams.body = null;
+        body = null;
       }
 
       const options = {
         hostname: api.hostname,
         method: requestParams.method,
-        path: requestParams.path,
+        path: path,
         headers: {
           'User-Agent': 'curl/7.47.0', // required
           'CB-ACCESS-TIMESTAMP': timestamp,
@@ -97,8 +106,8 @@ module.exports = {
             api.secret,
             timestamp,
             requestParams.method,
-            requestParams.path,
-            requestParams.body
+            path,
+            body
           ),
         }
       };
@@ -110,33 +119,44 @@ module.exports = {
       }
 
       // Make the request
-      const request = https.request(options, (response) => {
-        let data = '';
+      const request = https.request(options, (response) => {            
+        before = response.headers["cb-before"];
+        after = response.headers["cb-after"];
 
         // A chunk of data has been received. 
         response.on('data', (chunk) => {
           data += chunk;
         });
-      
+    
         // The whole response has been received. Print out the result.
         response.on('end', () => {
-          let body = JSON.parse(data);
-          if(body.message){
+          data = JSON.parse(data);
+          if (data.message) {
             resolve({
-              error: body.message,
+              error: data.message,
               data: {
                 timestamp: timestamp,
                 requestParams: requestParams,
               }
             });
           } else {
-            resolve(body);
-          }            
+            if (!after) {
+              // Last page, just resolve
+              resolve(data); 
+            } else {
+              // More pages, add the 'after' param to next request.
+              (requestParams.body = requestParams.body || {})["after"] = after;
+              // Merge the current data array, and the next data array, and resolve.
+              module.exports.request(requestParams).then((next) => {
+                resolve([...data, ...next]);
+              });
+            }
+          }
         });
       });
 
       request.on('error', (error) => {
-        if(requestParams.attempt < 4){
+        if (requestParams.attempt < 4) {
           requestParams.attempt++;
           resolve(null);
         } else {
@@ -153,7 +173,7 @@ module.exports = {
 
       request.end();
     })
-    .then((resolved) =>{
+    .then((resolved) => {
       if(resolved){
         // Success, return whatever was processed
         return resolved;

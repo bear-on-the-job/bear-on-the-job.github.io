@@ -1,2 +1,3 @@
 ignore/
 google-cloud/crypto-api/node_modules
+google-cloud/node_modules/*

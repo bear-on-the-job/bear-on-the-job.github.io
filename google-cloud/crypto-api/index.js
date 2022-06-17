@@ -1,4 +1,7 @@
 /**
+ * Setup: gcloud auth login
+ *        gcloud config set project crypto-api-325914
+ * 
  * Build: node --inspect node_modules/@google-cloud/functions-framework --target=dailyBuy
  * Deploy: gcloud functions deploy dailyBuy --trigger-http --runtime nodejs14 --allow-unauthenticated
  */
@@ -317,6 +320,7 @@ exports.dailyBuy = async function (req, res) {
                         currency: (orders.deposit?.currency || DEFAULT.DEPOSIT.CURRENCY)
                       };
 
+                      //response = null;
                       response = (await API.coinbase.deposits.paymentMethod(deposit));
 
                       // Check the response...
@@ -362,6 +366,7 @@ exports.dailyBuy = async function (req, res) {
                       price: current.adjustedPrice
                     };
 
+                    //response = null;
                     response = (await API.coinbase.placeOrder(order));
 
                     // Check the response...
