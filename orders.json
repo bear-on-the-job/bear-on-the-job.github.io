@@ -13,11 +13,11 @@
   "products": [
     {
       "product": "ETH-USD",
-      "weight": 30
+      "weight": 50
     },
     {
       "product": "BTC-USD",
-      "weight": 20
+      "weight": 40
     },
     {
       "product": "SOL-USD",
