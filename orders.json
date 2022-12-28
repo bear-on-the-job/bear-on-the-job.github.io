@@ -1,7 +1,7 @@
 {
   "deposit": {
     "source": "Evansville",
-    "amount": 18.00,
+    "amount": 15.00,
     "currency": "USD",
     "minimum": 10.00,
     "maximum": 200.00
@@ -13,27 +13,27 @@
   "products": [
     {
       "product": "ETH-USD",
-      "weight": 50
+      "weight": 60
     },
     {
       "product": "BTC-USD",
-      "weight": 40
+      "weight": 45
     },
     {
       "product": "SOL-USD",
-      "weight": 5
+      "weight": 3
     },
     {
       "product": "DOT-USD",
-      "weight": 5
+      "weight": 4
     },
     {
       "product": "ADA-USD",
-      "weight": 5
+      "weight": 4
     },    
     {
       "product": "ALGO-USD",
-      "weight": 3
+      "weight": 1
     },   
     {
       "product": "LTC-USD",
