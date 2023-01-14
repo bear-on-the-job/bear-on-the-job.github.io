@@ -8,7 +8,7 @@
   },
   "weighting": {
     "exponent": 1.8,
-    "maxDays": 5
+    "maxDays": 10
   },
   "products": [
     {
